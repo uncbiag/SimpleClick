@@ -1,6 +1,9 @@
 ## Interactive Image Segmentation with Transformers
 This is a course project for [COMP 790: Advanced Topics in Video Understanding (Fall 2021)](https://www.gedasbertasius.com/comp790-21f-project-details). 
 
+## Dataset
+[BraTS20](https://drive.google.com/drive/folders/12iSwrI2M98pV7s_5hOrp9r-PELlQzWOq?usp=sharing)
+
 ## Preprint (unfinished working paper)
 [https://arxiv.org/submit/4087220/view](https://arxiv.org/submit/4087220/view)
 
