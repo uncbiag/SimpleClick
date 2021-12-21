@@ -1,5 +1,6 @@
 ## Interactive Image Segmentation with Transformers
 This is a course project for [COMP 790: Advanced Topics in Video Understanding (Fall 2021)](https://www.gedasbertasius.com/comp790-21f-project-details). \
+Code is based on [RITM](https://github.com/saic-vul/ritm_interactive_segmentation) \
 Working preprint: [https://arxiv.org/submit/4087220/view](https://arxiv.org/submit/4087220/view).
 
 ## Datasets
