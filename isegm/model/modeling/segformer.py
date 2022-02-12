@@ -397,7 +397,7 @@ class MixVisionTransformer(BaseModule):
                 state_dict = checkpoint
 
 
-            # only use this code if we adopt v3
+            # only use this code if when adopt v3
             ori_proj_weight = state_dict['layers.0.0.projection.weight']
             state_dict['layers.0.0.projection.weight'] = torch.cat([ori_proj_weight, ori_proj_weight], dim=1)
 

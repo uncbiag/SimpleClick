@@ -13,11 +13,11 @@
 # --weights ./weights/sbd_h18_itermask.pth
 
 
-# Train SBD HRNet32
-python train.py models/iter_mask/hrnet32_sbd_itermask_3p.py \
---batch-size=32 \
---gpus=3 \
---exp-name hrnet32_sbd
+# # Train SBD HRNet32
+# python train.py models/iter_mask/hrnet32_sbd_itermask_3p.py \
+# --batch-size=32 \
+# --gpus=3 \
+# --exp-name hrnet32_sbd
 
 
 # # Train COCO_LVIS HRNet18
@@ -41,3 +41,7 @@ python train.py models/iter_mask/hrnet32_sbd_itermask_3p.py \
 
 # # Train HRFormer
 # python train.py models/iter_mask/hrformer_base_cocolvis_itermask_v3.py --batch-size=8 --gpus=1 --exp-name cocolvis_aux
+
+# Train SwinFormer
+python train.py models/iter_mask/swinformer_large_cocolvis_itermask.py --batch-size=22 --gpus=0 --exp-name cocolvis_swin_large
+#python train.py models/iter_mask/swinformer_base_cocolvis_itermask.py --batch-size=32 --gpus=1 --exp-name cocolvis_swin_base

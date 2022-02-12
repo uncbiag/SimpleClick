@@ -1,8 +1,8 @@
 # INTERACTIVE_MODELS_PATH: "./weights"
 # INTERACTIVE_MODELS_PATH: "/playpen-raid/qinliu/models/model_1012_2021/iter_mask/pascal_hrnet18/001/checkpoints"
 # INTERACTIVE_MODELS_PATH: "/playpen-raid/qinliu/models/model_1015_2021/iter_mask/pascal_segformerb5/005_pretrain_b2/checkpoints"
-INTERACTIVE_MODELS_PATH: "/playpen-raid/qinliu/models/model_1016_2021/iter_mask/cocolvis_segformerb2/000_cocolvis/checkpoints"
-EXPS_PATH: "/playpen-raid/qinliu/models/model_1113_2021"
+INTERACTIVE_MODELS_PATH: "/playpen-raid/qinliu/models/model_0207_2022/iter_mask/cocolvis_swinformer_base/000_cocolvis_swin_base/checkpoints"
+EXPS_PATH: "/playpen-raid/qinliu/models/model_0207_2022"
 
 # Evaluation datasets
 GRABCUT_PATH: "/playpen-raid/qinliu/data/GrabCut"
@@ -36,3 +36,5 @@ IMAGENET_PRETRAINED_MODELS:
   MIT_B1: "./weights/pretrained/mit_b1_converted.pth"
   MIT_B0: "./weights/pretrained/mit_b0_converted.pth"
   HRF_BASE: "./weights/pretrained/hrt_base.pth"
+  SWIN_BASE: "/playpen-raid/qinliu/projects/iSegFormer/weights/swin_base_patch4_window12_384_22k.pth"
+  SWIN_LARGE: "/playpen-raid/qinliu/projects/iSegFormer/weights/swin_large_patch4_window12_384_22k.pth"

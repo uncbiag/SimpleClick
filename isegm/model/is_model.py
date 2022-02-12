@@ -7,12 +7,15 @@ from isegm.model.modifiers import LRMult
 
 
 class ISModel(nn.Module):
-    def __init__(self, use_rgb_conv=True, with_aux_output=False,
+    def __init__(self, use_rgb_conv=True, use_naive_concat=False, use_deep_fusion=False, with_aux_output=False,
                  norm_radius=260, use_disks=False, cpu_dist_maps=False,
                  clicks_groups=None, with_prev_mask=False, use_leaky_relu=False,
                  binary_prev_mask=False, conv_extend=False, norm_layer=nn.BatchNorm2d,
                  norm_mean_std=([.485, .456, .406], [.229, .224, .225])):
         super().__init__()
+        self.use_naive_concat = use_naive_concat
+        self.use_deep_fusion = use_deep_fusion
+
         self.with_aux_output = with_aux_output
         self.clicks_groups = clicks_groups
         self.with_prev_mask = with_prev_mask
@@ -65,9 +68,13 @@ class ISModel(nn.Module):
         if self.rgb_conv is not None:
             x = self.rgb_conv(torch.cat((image, coord_features), dim=1))
             outputs = self.backbone_forward(x)
+        elif self.use_naive_concat:
+            x = torch.cat((image, coord_features), dim=1) # naive concating: this setting is only for transformers
+            outputs = self.backbone_forward(x)
+        elif self.use_deep_fusion:
+            outputs = self.backbone_forward(image, coord_features)
         else:
             coord_features = self.maps_transform(coord_features)
-            # x = torch.cat((image, coord_features), dim=1)
             outputs = self.backbone_forward(image, coord_features)
 
         outputs['instances'] = nn.functional.interpolate(outputs['instances'], size=image.size()[2:],

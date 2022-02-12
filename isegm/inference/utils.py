@@ -35,7 +35,7 @@ def load_is_model(checkpoint, device, **kwargs):
 
 def load_single_is_model(state_dict, device, **kwargs):
     model = load_model(state_dict['config'], **kwargs)
-    model.load_state_dict(state_dict['state_dict'], strict=False)
+    model.load_state_dict(state_dict['state_dict'], strict=True)
 
     for param in model.parameters():
         param.requires_grad = False

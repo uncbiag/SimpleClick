@@ -58,7 +58,6 @@ def load_model(config, **kwargs):
         if not param['specified'] and model_default_params[pname].default == value:
             continue
         model_args[pname] = value
-
     model_args.update(kwargs)
 
     return model_class(**model_args)
