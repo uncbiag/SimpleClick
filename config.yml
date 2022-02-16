@@ -9,6 +9,9 @@ GRABCUT_PATH: "/playpen-raid/qinliu/data/GrabCut"
 BERKELEY_PATH: "/playpen-raid/qinliu/data/Berkeley"
 DAVIS_PATH: "/playpen-raid/qinliu/data/DAVIS"
 COCO_MVAL_PATH: "/playpen-raid/qinliu/data/COCO_MVal"
+BraTS_PATH: "/playpen-raid/qinliu/data/BraTS20"
+ssTEM_PATH: "/playpen-raid/qinliu/data/ssTEM"
+OAIZIB_PATH: "/playpen-raid/qinliu/data/OAI-ZIB/test"
 
 # Train datasets
 SBD_PATH: "/playpen-raid/qinliu/data/SBD/dataset"
@@ -17,8 +20,6 @@ LVIS_v1_PATH: "/playpen-raid/qinliu/data/COCO_2017"
 OPENIMAGES_PATH: "./datasets/OpenImages"
 PASCALVOC_PATH: "/playpen-raid/qinliu/data/PascalVOC"
 ADE20K_PATH: "./datasets/ADE20K"
-BraTS_PATH: "/playpen-raid/qinliu/data/BraTS20"
-ssTEM_PATH: "/playpen-raid/qinliu/data/ssTEM"
 
 # You can download the weights for HRNet from the repository:
 # https://github.com/HRNet/HRNet-Image-Classification
