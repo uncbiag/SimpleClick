@@ -31,7 +31,7 @@
 # python train.py models/iter_mask/hrnet32_cocolvis_itermask_3p.py \
 # --batch-size=32 \
 # --gpus=3 \
-# --exp-name hrnet32_sota_finetune \
+# --exp-name cocolvis_hrnet32
 # --weights ./weights/coco_lvis_h32_itermask.pth
 
 
@@ -43,5 +43,12 @@
 # python train.py models/iter_mask/hrformer_base_cocolvis_itermask_v3.py --batch-size=8 --gpus=1 --exp-name cocolvis_aux
 
 # Train SwinFormer
-python train.py models/iter_mask/swinformer_large_cocolvis_itermask.py --batch-size=22 --gpus=0 --exp-name cocolvis_swin_large
+#python train.py models/iter_mask/swinformer_large_cocolvis_itermask.py --batch-size=22 --gpus=0 --exp-name cocolvis_swin_large
 #python train.py models/iter_mask/swinformer_base_cocolvis_itermask.py --batch-size=32 --gpus=1 --exp-name cocolvis_swin_base
+
+# Fine tune on OAI-ZIB dataset
+python train.py models/iter_mask/hrnet32_oaizib_itermask_3p.py \
+--batch-size=32 \
+--gpu=3 \
+--exp-name oaizib_hrnet32 \
+--weights /playpen-raid/qinliu/projects/iSegFormer/weights/cocolvis_hr32_epoch_54.pth

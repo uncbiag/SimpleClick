@@ -1,1 +1,6 @@
-python3 demo.py --checkpoint=/playpen-raid/qinliu/projects/ritm_interactive_segmentation/weights/coco_lvis_h32_itermask_sota.pth --gpu 0
+model_folder=/playpen-raid/qinliu/projects/iSegFormer/weights
+model_name=cocolvis_hr32_epoch_54.pth
+
+python3 demo.py \
+--checkpoint=${model_folder}/${model_name} \
+--gpu 1
