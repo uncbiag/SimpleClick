@@ -16,10 +16,18 @@
 # --dataset=BraTS --print-ious --n-clicks 5
 
 #model_folder=/playpen-raid/qinliu/models/model_0207_2022/iter_mask/cocolvis_hrnet32/002_cocolvis_hrnet32/checkpoints/054.pth
-model_folder=/playpen-raid/qinliu/models/model_0218_2022/iter_mask/oaizib_hrnet32/004_oaizib_hrnet32/checkpoints/030.pth
+#model_folder=/playpen-raid/qinliu/models/model_0218_2022/iter_mask/oaizib_hrnet32/004_oaizib_hrnet32/checkpoints/030.pth
+#model_folder=/playpen-raid/qinliu/models/model_0218_2022/iter_mask/oaizib_swinformer_large/003_oaizib_swin_large/checkpoints/030.pth
+#model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_hrnet32/000_oaizib_hrnet32_finetune/checkpoints/054.pth
+#model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_swinformer_base/000_oaizib_swin_base_finetune/checkpoints/030.pth
+#model_folder=/playpen-raid2/qinliu/projects/iSegFormer/weights/oai_pretrain_swin_large_epoch_54.pth
+#model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_swinformer_large/001_oaizib_swin_large_finetune/checkpoints/054.pth
+#model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_swinformer_large/004_oaizib_swin_large/checkpoints/054.pth
+#model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_hrnet32/003_oaizib_hrnet32/checkpoints/054.pth
+#model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_swinformer_base/001_oaizib_swin_base/checkpoints/054.pth
+model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_hrnet32/000_oaizib_hrnet32_finetune/checkpoints/054.pth
 
 python scripts/evaluate_model.py NoBRS \
---gpu 1 \
+--gpu 0 \
 --checkpoint=${model_folder} \
 --dataset=OAIZIB
-#--vis-preds

@@ -14,3 +14,4 @@ from .pascalvoc import PascalVocDataset
 from .brats import BraTSDataset
 from .ssTEM import ssTEMDataset
 from .oai_zib import OAIZIBDataset
+from .oai import OAIDataset

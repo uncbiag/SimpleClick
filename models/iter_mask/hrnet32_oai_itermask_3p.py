@@ -1,5 +1,5 @@
 from isegm.utils.exp_imports.default import *
-MODEL_NAME = 'oaizib_hrnet32'
+MODEL_NAME = 'oai_hrnet32_pretrain'
 
 
 def main(cfg):
@@ -17,7 +17,7 @@ def init_model(cfg):
 
     model.to(cfg.device)
     model.apply(initializer.XavierGluon(rnd_type='gaussian', magnitude=2.0))
-    model.feature_extractor.load_pretrained_weights(cfg.IMAGENET_PRETRAINED_MODELS.HRNETV2_W32)
+    # model.feature_extractor.load_pretrained_weights(cfg.IMAGENET_PRETRAINED_MODELS.HRNETV2_W32)
 
     return model, model_cfg
 
@@ -55,15 +55,15 @@ def train(model, cfg, model_cfg):
                                        merge_objects_prob=0.15,
                                        max_num_merged_objects=2)
 
-    trainset = OAIZIBDataset(
-        cfg.OAIZIB_PATH,
+    trainset = OAIDataset(
+        cfg.OAI_PATH,
         split='train',
         augmentator=train_augmentator,
     )
 
-    valset = OAIZIBDataset(
-        cfg.OAIZIB_PATH,
-        split='val',
+    valset = OAIDataset(
+        cfg.OAI_PATH,
+        split='train',
         augmentator=val_augmentator,
         points_sampler=points_sampler,
         epoch_len=100
