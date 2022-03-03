@@ -6,6 +6,7 @@ future==0.18.2
 graphviz==0.17
 imgaug>=0.4
 matplotlib==3.3.4
+mmcv-full==1.3.13
 ninja==1.10.2
 numpy>=1.21.2
 opencv-python-headless==4.5.3.56
