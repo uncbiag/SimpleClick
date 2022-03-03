@@ -18,3 +18,4 @@ tensorboard
 torch==1.10.0
 torchvision>=0.10.0
 tqdm==4.59.0
+timm==0.4.12
