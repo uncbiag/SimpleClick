@@ -9,7 +9,7 @@ matplotlib==3.3.4
 ninja==1.10.2
 numpy>=1.21.2
 opencv-python-headless==4.5.3.56
-pyyaml==
+pyyaml
 Pillow==8.2.0
 scikit-image==0.18.1
 scipy==1.6.2
