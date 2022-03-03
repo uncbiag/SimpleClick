@@ -14,6 +14,6 @@ Pillow==8.2.0
 scikit-image==0.18.1
 scipy==1.6.2
 tensorboard
-torch==1.9.1
-torchvision==0.10.1
+torch==1.10.0
+torchvision>=0.10.0
 tqdm==4.59.0
