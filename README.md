@@ -1,7 +1,22 @@
-## Interactive Image Segmentation with Transformers
-This is a course project for UNC [COMP 790: Advanced Topics in Video Understanding (Fall 2021)](https://www.gedasbertasius.com/comp790-21f-project-details). \
-Code is based on [RITM](https://github.com/saic-vul/ritm_interactive_segmentation) \
-Working preprint: [https://arxiv.org/abs/2112.11325](https://arxiv.org/abs/2112.11325).
+## iSegFormer: Interactive Image Segmentation with Transformers
+
+<p align="center">
+  <img src="./assets/img/iSegFormer.png" alt="drawing", width="650"/>
+</p>
+
+<p align="center">
+    <a href="https://arxiv.org/abs/2112.11325">
+        <img src="https://img.shields.io/badge/arXiv-2102.06583-b31b1b"/>
+    </a>
+    <a href="https://github.com/qinliuliuqin/iSegFormer/blob/main/notebooks/colab_test_isegformer.ipynb">
+        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+    </a>
+    <a href="https://opensource.org/licenses/MIT">
+        <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="The MIT License"/>
+    </a>
+</p>
+
+This is the official implementation for [iSegFormer: Interactive Image Segmentation with Transformers](https://arxiv.org/abs/2112.11325).
 
 ## Usage
 ```
