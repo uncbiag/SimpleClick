@@ -1,7 +1,7 @@
 ## iSegFormer: Interactive Image Segmentation with Transformers
 
 <p align="center">
-  <img src="./assets/img/iSegFormer.png" alt="drawing", width="400"/>
+  <img src="./assets/img/iSegFormer.png" alt="drawing", width="650"/>
 </p>
 
 <p align="center">
