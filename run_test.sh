@@ -25,7 +25,10 @@
 #model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_swinformer_large/004_oaizib_swin_large/checkpoints/054.pth
 #model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_hrnet32/003_oaizib_hrnet32/checkpoints/054.pth
 #model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_swinformer_base/001_oaizib_swin_base/checkpoints/054.pth
-model_folder=/playpen-raid/qinliu/models/model_0221_2022/iter_mask/oaizib_hrnet32/000_oaizib_hrnet32_finetune/checkpoints/054.pth
+#model_folder=/playpen-raid/qinliu/models/model_0228_2022/iter_mask/oaizib_hrnet32/000_oaizib_hrnet32_finetune/checkpoints/054.pth
+#model_folder=/playpen-raid/qinliu/models/model_0228_2022/iter_mask/oaizib_swinformer_large/000_no_pretrain_oaizib_ft_swin_large/checkpoints/054.pth
+model_folder=/playpen-raid2/qinliu/projects/iSegFormer/weights/imagenet21k_pretrain_cocolvis_finetune_segformerb5_epoch_54.pth
+
 
 python scripts/evaluate_model.py NoBRS \
 --gpu 0 \
