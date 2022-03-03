@@ -1,48 +1,96 @@
-from pysnic.algorithms.snic import snic
-from pkg_resources import resource_stream
-from PIL import Image
-import matplotlib.pyplot as plt
 import numpy as np
-import skimage.color
-from skimage.segmentation import mark_boundaries
-from pysnic.algorithms.snic import snic
 import os
-from PIL import Image
-import sys
+import SimpleITK as sitk
+import torch
+from model.propagation.prop_net import PropagationNetwork
+from model.fusion_net import FusionNet
+from interact.interactive_utils import load_volume, images_to_torch
+from inference_core import InferenceCore
+
+model_folder = '/playpen-raid2/qinliu/projects/iSegFormer/maskprop/MiVOS/saves'
+prop_model_path = os.path.join(model_folder, 'stcn.pth')
+fusion_model_path = os.path.join(model_folder, 'fusion_stcn.pth')
+
+# Load our checkpoint
+prop_saved = torch.load(prop_model_path)
+prop_model = PropagationNetwork().cuda().eval()
+prop_model.load_state_dict(prop_saved)
+
+fusion_saved = torch.load(fusion_model_path)
+fusion_model = FusionNet().cuda().eval()
+fusion_model.load_state_dict(fusion_saved)
+
+volume_path = '/playpen-raid2/qinliu/projects/iSegFormer/maskprop/MiVOS/example/9092628_image.nii.gz'
+images = load_volume(volume_path, normalize=True)
+
+label_path = '/playpen-raid2/qinliu/projects/iSegFormer/maskprop/MiVOS/example/9092628_label.nii.gz'
+label = load_volume(label_path, normalize=False)
+
+num_objects = 2
+mem_freq = 5
+mem_profile = 0
+
+processor = InferenceCore(
+    prop_model, 
+    fusion_model, 
+    images_to_torch(images, device='cpu'), 
+    num_objects, 
+    mem_freq=mem_freq, 
+    mem_profile=mem_profile
+)
 
 
-args = sys.argv
-start, end = int(args[1]), int(args[2])
+def get_selected_mask(label, frame_idx):
+    label_frame = label[label_frame_idx][:,:,0]
 
-image_folder = '/playpen-raid2/qinliu/data/OAI/train/image'
-images = os.listdir(image_folder)
-images.sort()
-images = images[start:end]
+    label_frame_fc = np.zeros_like(label_frame)
+    label_frame_fc[label_frame == 2] = 1
 
-output_folder = '/playpen-raid2/qinliu/data/OAI/train/annotations'
+    label_frame_tc = np.zeros_like(label_frame)
+    label_frame_tc[label_frame == 4] = 1
 
-for idx, image in enumerate(images):
-    print(idx, image)
+    label_frame_bg = np.ones_like(label_frame)
+    label_frame_bg[label_frame_fc] = 0
+    label_frame_bg[label_frame_tc] = 0
 
-    # load image
-    image_path = os.path.join(image_folder, image)
-    color_image = np.array(Image.open(image_path))
+    label_frame = np.stack([label_frame_bg, label_frame_fc, label_frame_tc], axis=0)
+    return label_frame
 
-    if len(color_image.shape) != 3:
-        color_image = np.stack([color_image, color_image, color_image], axis=2)
 
-    lab_image = skimage.color.rgb2lab(color_image).tolist()
-    number_of_pixels = color_image.shape[0] * color_image.shape[1]
+mask_save_folder = '/playpen-raid2/qinliu/projects/iSegFormer/maskprop/MiVOS/test_results'
 
-    # SNIC parameters
-    target_number_of_segments = 50
-    compactness = 10.00
+label_frame_idx = 40
+label_frame = get_selected_mask(label, label_frame_idx)
+label_frame = torch.from_numpy(label_frame)
+label_frame = torch.unsqueeze(label_frame, dim=1)
+current_mask = processor.interact(label_frame, label_frame_idx)
 
-    segmentation, _, centroids = snic(lab_image, target_number_of_segments, compactness)
-    actual_number_of_segments = len(centroids)
+# save the propagated mask with only one labeled frame
+current_mask = sitk.GetImageFromArray(current_mask)
+current_mask.CopyInformation(sitk.ReadImage(label_path))
+current_mask_save_path = os.path.join(mask_save_folder, '9092628_seg_1frame.nii.gz')
+sitk.WriteImage(current_mask, current_mask_save_path)
 
-    segmentation_npy = np.array(segmentation).astype(np.int32)
-    img = Image.fromarray(segmentation_npy)
-    if img.mode != 'RGB':
-        img = img.convert('RGB')
-    img.save(os.path.join(output_folder, image))
+label_frame_idx = 120
+label_frame = get_selected_mask(label, label_frame_idx)
+label_frame = torch.from_numpy(label_frame)
+label_frame = torch.unsqueeze(label_frame, dim=1)
+current_mask = processor.interact(label_frame, label_frame_idx)
+
+# save the propagated mask with two labeled frames
+current_mask = sitk.GetImageFromArray(current_mask)
+current_mask.CopyInformation(sitk.ReadImage(label_path))
+current_mask_save_path = os.path.join(mask_save_folder, '9092628_seg_2frames.nii.gz')
+sitk.WriteImage(current_mask, current_mask_save_path)
+
+label_frame_idx = 80
+label_frame = get_selected_mask(label, label_frame_idx)
+label_frame = torch.from_numpy(label_frame)
+label_frame = torch.unsqueeze(label_frame, dim=1)
+current_mask = processor.interact(label_frame, label_frame_idx)
+
+# save the propagated mask with two labeled frames
+current_mask = sitk.GetImageFromArray(current_mask)
+current_mask.CopyInformation(sitk.ReadImage(label_path))
+current_mask_save_path = os.path.join(mask_save_folder, '9092628_seg_3frames.nii.gz')
+sitk.WriteImage(current_mask, current_mask_save_path)
