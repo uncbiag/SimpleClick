@@ -47,7 +47,7 @@ def init_model(cfg):
         norm_radius=5, 
         with_prev_mask=True,
         )
-    model.backbone.init_weights(cfg.IMAGENET_PRETRAINED_MODELS.SWIN_BASE)
+    # model.backbone.init_weights(cfg.IMAGENET_PRETRAINED_MODELS.SWIN_BASE)
     model.to(cfg.device)
 
     return model, model_cfg
@@ -95,7 +95,7 @@ def train(model, cfg, model_cfg):
     )
 
     optimizer_params = {
-        'lr': 5e-5, 'betas': (0.9, 0.999), 'eps': 1e-8
+        'lr': 5e-4, 'betas': (0.9, 0.999), 'eps': 1e-8
     }
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
