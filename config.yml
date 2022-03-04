@@ -11,7 +11,7 @@ DAVIS_PATH: "/playpen-raid/qinliu/data/DAVIS"
 COCO_MVAL_PATH: "/playpen-raid/qinliu/data/COCO_MVal"
 BraTS_PATH: "/playpen-raid/qinliu/data/BraTS20"
 ssTEM_PATH: "/playpen-raid/qinliu/data/ssTEM"
-OAIZIB_PATH: "/playpen-raid2/qinliu/data/OAI-ZIB"
+OAIZIB_PATH: "./datasets/OAI-ZIB"
 OAI_PATH: "/playpen-raid2/qinliu/data/OAI"
 
 # Train datasets
