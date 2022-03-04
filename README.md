@@ -1,4 +1,4 @@
-## [iSegFormer: Interactive Image Segmentation  Transformers with Application to 3D Knee MR Images](https://arxiv.org/abs/2112.11325)
+## [iSegFormer: Interactive Image Segmentation via Transformers with Application to 3D Knee MR Images](https://arxiv.org/abs/2112.11325)
 <p align="center">
     <a href="https://arxiv.org/abs/2112.11325">
         <img src="https://img.shields.io/badge/arXiv-2102.06583-b31b1b"/>
