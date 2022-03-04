@@ -1,4 +1,4 @@
-## [iSegFormer: Interactive Image Segmentation with Transformers with Application to 3D Knee MR Images](https://arxiv.org/abs/2112.11325)
+## [iSegFormer: Interactive Image Segmentation  Transformers with Application to 3D Knee MR Images](https://arxiv.org/abs/2112.11325)
 <p align="center">
     <a href="https://arxiv.org/abs/2112.11325">
         <img src="https://img.shields.io/badge/arXiv-2102.06583-b31b1b"/>
@@ -64,7 +64,7 @@ The code is released under the MIT License. It is a short, permissive software l
 ## Citation
 ```
 @article{liu2021isegformer,
-  title={iSegFormer: Interactive Image Segmentation with Transformers with Application to 3D Knee MR Images},
+  title={iSegFormer: Interactive Image Segmentation via Transformers with Application to 3D Knee MR Images},
   author={Liu, Qin and Xu, Zhenlin, and Jiao, Yining and Niethammer, Marc},
   journal={arXiv preprint arXiv:2112.11325},
   year={2021}
