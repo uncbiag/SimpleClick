@@ -15,7 +15,7 @@
   <img src="./assets/img/iSegFormer.png" alt="drawing", width="650"/>
 </p>
 
-## Insallation
+## Installation
 If you want to test our models remotely, run this [colab notebook](https://colab.research.google.com/github/qinliuliuqin/iSegFormer/blob/main/notebooks/colab_test_isegformer.ipynb
 ). Otherwise, you have to download our codebase and install it locally.
 
