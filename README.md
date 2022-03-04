@@ -28,7 +28,7 @@ pip3 install -r requirements.txt
 If you want to run training or testing, you must configure the paths to the datasets in [config.yml](config.yml).
 
 ## Evaluation
-First, download the [pretrained weights](https://github.com/qinliuliuqin/iSegFormer/releases) and run the following code for evaluation:
+First, download the [datasets and pretrained weights](https://github.com/qinliuliuqin/iSegFormer/releases) and run the following code for evaluation:
 ```
 python scripts/evaluate_model.py NoBRS \
 --gpu 0 \
