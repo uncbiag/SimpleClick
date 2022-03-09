@@ -47,11 +47,11 @@ python train.py models/iter_mask/swinformer_large_oaizib_itermask.py \
 ## Model Weights
 We released two models: Swin-B and HRNet32 that can be downloaded in the [release page](https://github.com/qinliuliuqin/iSegFormer/releases).
 
-## Datasets
+<!-- ## Datasets
 [OAI-ZIB-test](https://github.com/qinliuliuqin/iSegFormer/releases/download/v0.1/OAI-ZIB-test.zip) \
 [BraTS20](https://drive.google.com/drive/folders/12iSwrI2M98pV7s_5hOrp9r-PELlQzWOq?usp=sharing) \
 [ssTEM](https://github.com/unidesigner/groundtruth-drosophila-vnc/tree/master/stack1/raw)
-
+ -->
 <!-- ## Video Demos
 The following two demos are out of date.
 [Demo 1: OAI Knee](https://drive.google.com/file/d/1HyQsWYA6aG7I5C57b8ZTczNrW9OR6ZDS/view?usp=sharing) \
