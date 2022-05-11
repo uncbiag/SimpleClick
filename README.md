@@ -15,11 +15,6 @@
   <img src="./assets/img/iSegFormer.png" alt="drawing", width="650"/>
 </p>
 
-## Demo with GUI
-```
-$ ./run_demo.sh
-```
-
 ## Installation
 If you want to test our models remotely, run this [colab notebook](https://colab.research.google.com/github/qinliuliuqin/iSegFormer/blob/main/notebooks/colab_test_isegformer.ipynb
 ). Otherwise, you have to download our codebase and install it locally.
@@ -31,6 +26,11 @@ necessary packages:
 pip3 install -r requirements.txt
 ```
 If you want to run training or testing, you must configure the paths to the datasets in [config.yml](config.yml).
+
+## Demo with GUI
+```
+$ ./run_demo.sh
+```
 
 ## Evaluation
 First, download the [datasets and pretrained weights](https://github.com/qinliuliuqin/iSegFormer/releases) and run the following code for evaluation:
