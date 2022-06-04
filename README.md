@@ -27,6 +27,11 @@ pip3 install -r requirements.txt
 ```
 If you want to run training or testing, you must configure the paths to the datasets in [config.yml](config.yml).
 
+## Demo with GUI
+```
+$ ./run_demo.sh
+```
+
 ## Evaluation
 First, download the [datasets and pretrained weights](https://github.com/qinliuliuqin/iSegFormer/releases) and run the following code for evaluation:
 ```
