@@ -195,7 +195,9 @@ def save_results(args, row_name, dataset_name, logs_path, logs_prefix, dataset_r
     mean_spc, mean_spi = utils.get_time_metrics(all_ious, elapsed_time)
 
     iou_thrs = np.arange(0.8, min(0.95, args.target_iou) + 0.001, 0.05).tolist()
-    noc_list, over_max_list = utils.compute_noc_metric(all_ious, iou_thrs=iou_thrs, max_clicks=args.n_clicks)
+    noc_list, noc_list_std, over_max_list = utils.compute_noc_metric(all_ious, iou_thrs=iou_thrs, max_clicks=args.n_clicks)
+
+    # print(noc_list, noc_list_std)
 
     row_name = 'last' if row_name == 'last_checkpoint' else row_name
     model_name = str(logs_path.relative_to(args.logs_path)) + ':' + logs_prefix if logs_prefix else logs_path.stem
@@ -212,7 +214,7 @@ def save_results(args, row_name, dataset_name, logs_path, logs_prefix, dataset_r
     else:
         target_iou_int = int(args.target_iou * 100)
         if target_iou_int not in [80, 85, 90]:
-            noc_list, over_max_list = utils.compute_noc_metric(all_ious, iou_thrs=[args.target_iou],
+            noc_list, _, over_max_list = utils.compute_noc_metric(all_ious, iou_thrs=[args.target_iou],
                                                                max_clicks=args.n_clicks)
             table_row += f' NoC@{args.target_iou:.1%} = {noc_list[0]:.2f};'
             table_row += f' >={args.n_clicks}@{args.target_iou:.1%} = {over_max_list[0]}'

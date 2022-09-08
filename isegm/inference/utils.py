@@ -88,18 +88,21 @@ def compute_noc_metric(all_ious, iou_thrs, max_clicks=20):
         return np.argmax(vals) + 1 if np.any(vals) else max_clicks
 
     noc_list = []
+    noc_list_std = []
     over_max_list = []
     for iou_thr in iou_thrs:
         scores_arr = np.array([_get_noc(iou_arr, iou_thr)
                                for iou_arr in all_ious], dtype=np.int)
 
         score = scores_arr.mean()
+        score_std = scores_arr.std()
         over_max = (scores_arr == max_clicks).sum()
 
         noc_list.append(score)
+        noc_list_std.append(score_std)
         over_max_list.append(over_max)
 
-    return noc_list, over_max_list
+    return noc_list, noc_list_std, over_max_list
 
 
 def find_checkpoint(weights_folder, checkpoint_name):

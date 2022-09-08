@@ -1,5 +1,7 @@
 from isegm.utils.exp_imports.default import *
-MODEL_NAME = 'cocolvis_hrnet32'
+from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
+
+MODEL_NAME = 'cocolvis_plainvit_base'
 
 
 def main(cfg):
@@ -12,12 +14,37 @@ def init_model(cfg):
     model_cfg.crop_size = (224, 224)
     model_cfg.num_max_points = 24
 
-    model = HRNetModel(width=32, ocr_width=128, with_aux_output=True, use_leaky_relu=True,
-                       use_disks=True, norm_radius=5, with_prev_mask=True)
+    backbone_params = dict(
+        img_size=(224,224),
+        patch_size=(16,16),
+        in_chans=3,
+        embed_dim=768,
+        depth=12,
+        num_heads=12,
+        mlp_ratio=4, 
+        qkv_bias=True,
+    )
 
+    head_params = dict(
+        in_channels=[128, 256, 512, 1024],
+        in_index=[0, 1, 2, 3],
+        channels=256,
+        dropout_ratio=0.1,
+        num_classes=1,
+        loss_decode=CrossEntropyLoss(),
+        align_corners=False,
+    )
+
+    model = PlainVitModel(
+        use_disks=True,
+        norm_radius=5,
+        with_prev_mask=True,
+        backbone_params=backbone_params,
+        head_params=head_params,
+    )
+
+    model.backbone.init_weights_from_pretrained(cfg.IMAGENET_PRETRAINED_MODELS.MAE_BASE)
     model.to(cfg.device)
-    model.apply(initializer.XavierGluon(rnd_type='gaussian', magnitude=2.0))
-    model.feature_extractor.load_pretrained_weights(cfg.IMAGENET_PRETRAINED_MODELS.HRNETV2_W32)
 
     return model, model_cfg
 
@@ -30,8 +57,6 @@ def train(model, cfg, model_cfg):
     loss_cfg = edict()
     loss_cfg.instance_loss = NormalizedFocalLossSigmoid(alpha=0.5, gamma=2)
     loss_cfg.instance_loss_weight = 1.0
-    loss_cfg.instance_aux_loss = SigmoidBinaryCrossEntropyLoss()
-    loss_cfg.instance_aux_loss_weight = 0.4
 
     train_augmentator = Compose([
         UniformRandomResize(scale_range=(0.75, 1.40)),
@@ -72,19 +97,19 @@ def train(model, cfg, model_cfg):
     )
 
     optimizer_params = {
-        'lr': 5e-5, 'betas': (0.9, 0.999), 'eps': 1e-8
+        'lr': 5e-4, 'betas': (0.9, 0.999), 'eps': 1e-8
     }
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
-                           milestones=[200, 220], gamma=0.1)
+                           milestones=[49, 55], gamma=0.1)
     trainer = ISTrainer(model, cfg, model_cfg, loss_cfg,
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
                         lr_scheduler=lr_scheduler,
-                        checkpoint_interval=[(0, 5), (200, 1)],
+                        checkpoint_interval=[(0, 5), (49, 1)],
                         image_dump_interval=3000,
                         metrics=[AdaptiveIoU()],
                         max_interactive_points=model_cfg.num_max_points,
                         max_num_next_clicks=3)
-    trainer.run(num_epochs=230, validation=False)
+    trainer.run(num_epochs=55, validation=False)
