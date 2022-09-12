@@ -1,7 +1,7 @@
 from isegm.utils.exp_imports.default import *
 from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
 
-MODEL_NAME = 'cocolvis_plainvit_base'
+MODEL_NAME = 'cocolvis_plainvit_base224'
 
 
 def main(cfg):

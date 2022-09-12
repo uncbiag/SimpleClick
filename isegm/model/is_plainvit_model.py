@@ -10,7 +10,10 @@ class SimpleFPN(nn.Module):
     def __init__(self, in_dim=768, out_dims=[128, 256, 512, 1024]):
         super().__init__()
         self.down_4 = nn.Sequential(
-            nn.ConvTranspose2d(in_dim, out_dims[0], 4, stride=4),
+            nn.ConvTranspose2d(in_dim, 2*out_dims[0], 2, stride=2),
+            nn.GroupNorm(1, 2*out_dims[0]),
+            nn.GELU(),
+            nn.ConvTranspose2d(2*out_dims[0], out_dims[0], 2, stride=2),
             nn.GroupNorm(1, out_dims[0]),
             nn.GELU()
         )
@@ -29,6 +32,11 @@ class SimpleFPN(nn.Module):
             nn.GroupNorm(1, out_dims[3]),
             nn.GELU()
         )
+
+        self.init_weights()
+
+    def init_weights(self):
+        pass
 
     def forward(self, x):
         x_down_4 = self.down_4(x)
@@ -64,7 +72,7 @@ class PlainVitModel(ISModel):
 
     def backbone_forward(self, image, coord_features=None):
         coord_features = self.patch_embed_coords(coord_features)
-        backbone_features = self.backbone.forward_backbone(image, coord_features)[:, 1:]
+        backbone_features = self.backbone.forward_backbone(image, coord_features)
 
         # Extract 4 stage backbone feature map: 1/4, 1/8, 1/16, 1/32
         B, N, C = backbone_features.shape

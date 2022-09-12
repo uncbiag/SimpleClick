@@ -1,7 +1,7 @@
 from isegm.utils.exp_imports.default import *
 from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
 
-MODEL_NAME = 'cocolvis_plainvit_large'
+MODEL_NAME = 'cocolvis_plainvit_large448'
 
 
 def main(cfg):
@@ -11,11 +11,11 @@ def main(cfg):
 
 def init_model(cfg):
     model_cfg = edict()
-    model_cfg.crop_size = (224, 224)
+    model_cfg.crop_size = (448, 448)
     model_cfg.num_max_points = 24
 
     backbone_params = dict(
-        img_size=(224,224),
+        img_size=model_cfg.crop_size,
         patch_size=(16,16),
         in_chans=3,
         embed_dim=1024,
@@ -113,7 +113,7 @@ def train(model, cfg, model_cfg):
                         optimizer='adam',
                         optimizer_params=optimizer_params,
                         lr_scheduler=lr_scheduler,
-                        checkpoint_interval=[(0, 5), (49, 1)],
+                        checkpoint_interval=[(0, 10), (50, 1)],
                         image_dump_interval=300,
                         metrics=[AdaptiveIoU()],
                         max_interactive_points=model_cfg.num_max_points,

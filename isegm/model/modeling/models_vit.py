@@ -92,11 +92,11 @@ class PatchEmbed(nn.Module):
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
     def forward(self, x):
-        B, C, H, W = x.shape
-        assert H == self.img_size[0] and W == self.img_size[1], \
-            f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
-        assert C == self.in_chans, \
-            f"Input image chanel ({C}) doesn't match model ({self.in_chans})"
+        # B, C, H, W = x.shape
+        # assert H % self.img_size[0] == 0 and W == self.img_size[1], \
+        #     f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
+        # assert C == self.in_chans, \
+        #     f"Input image chanel ({C}) doesn't match model ({self.in_chans})"
         x = self.proj(x)
         if self.flatten:
             x = x.flatten(2).transpose(1, 2)  # BCHW -> BNC
@@ -185,19 +185,55 @@ class VisionTransformer(nn.Module):
     def no_weight_decay(self):
         return {'pos_embed', 'cls_token', 'dist_token'}
 
+
+    def patchify(self, x):
+        """
+        in: (B, N, C)
+        out: (B*4, N//4, C)
+        """
+        B, N, C = x.shape
+        grid_h, grid_w = self.patch_embed.grid_size
+        x = x.view(B, 2, grid_h // 2, 2, grid_w // 2, C)
+        x_patchified = x.permute((0, 1, 3, 2, 4, 5)).contiguous().view(B * 4, grid_h * grid_w // 4, C)
+
+        return x_patchified
+
+    def unpatchify(self, x):
+        """
+        in: (B*4, N//4, C)
+        out: (B, N, C)
+        """
+        B, N, C = x.shape
+        grid_h, grid_w = self.patch_embed.grid_size
+        x = x.view(B // 4, 2, 2, grid_h // 2, grid_w // 2, C).permute((0, 1, 3, 2, 4, 5)).contiguous().view(B // 4, 4 * N, C)
+
+        return x
+
+
     def forward_backbone(self, x, additional_features=None):
         x = self.patch_embed(x)
         if additional_features is not None:
             x += additional_features
 
+        x = self.pos_drop(x + self.pos_embed[:, 1:])
+ 
+        num_blocks = len(self.blocks)
+        assert num_blocks % 12 == 0
+        for i in range(1, num_blocks + 1):
+            x_patchified = self.patchify(x)
+            x_patchified = self.blocks[i-1](x_patchified)
+            if i % 6 == 0 or i == num_blocks:
+                x = self.unpatchify(x_patchified)
+                x = self.blocks[i-1](x)
+        return x
+
+    def forward(self, x):
+        x = self.patch_embed(x)
         cls_token = self.cls_token.expand(x.shape[0], -1, -1)
         x = torch.cat((cls_token, x), dim=1)
         x = self.pos_drop(x + self.pos_embed)
         x = self.blocks(x)
-        return x
 
-    def forward(self, x):
-        x = self.forward_backbone(x)
         if self.global_pool:
             x = x[:, 1:].mean(dim=1) # global pool without cls token
             x = self.fc_norm(x)
