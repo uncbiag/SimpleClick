@@ -189,23 +189,27 @@ class VisionTransformer(nn.Module):
     def patchify(self, x):
         """
         in: (B, N, C)
-        out: (B*4, N//4, C)
+        out: (B*win_w*win_h, N//(win_w*win_h), C)
         """
         B, N, C = x.shape
         grid_h, grid_w = self.patch_embed.grid_size
-        x = x.view(B, 2, grid_h // 2, 2, grid_w // 2, C)
-        x_patchified = x.permute((0, 1, 3, 2, 4, 5)).contiguous().view(B * 4, grid_h * grid_w // 4, C)
+        win_h, win_w = grid_h // 14, grid_w // 14
+        x = x.view(B, win_h, grid_h // win_h, win_w, grid_w // win_w, C)
+        x_patchified = x.permute((0, 1, 3, 2, 4, 5)).contiguous()
+        x_patchified = x_patchified.view(B * win_h * win_w, grid_h * grid_w // (win_h * win_w), C)
 
         return x_patchified
 
     def unpatchify(self, x):
         """
-        in: (B*4, N//4, C)
+        in: (B*4, N//(win_h*win_w), C)
         out: (B, N, C)
         """
         B, N, C = x.shape
         grid_h, grid_w = self.patch_embed.grid_size
-        x = x.view(B // 4, 2, 2, grid_h // 2, grid_w // 2, C).permute((0, 1, 3, 2, 4, 5)).contiguous().view(B // 4, 4 * N, C)
+        win_h, win_w = grid_h // 14, grid_w // 14
+        x = x.view(B // (win_h * win_w), win_h, win_w, grid_h // win_h, grid_w // win_w, C)
+        x = x.permute((0, 1, 3, 2, 4, 5)).contiguous().view(B // (win_h * win_w), win_h * win_w * N, C)
 
         return x
 
@@ -218,7 +222,7 @@ class VisionTransformer(nn.Module):
         x = self.pos_drop(x + self.pos_embed[:, 1:])
  
         num_blocks = len(self.blocks)
-        assert num_blocks % 12 == 0
+        assert num_blocks % 6 == 0
         for i in range(1, num_blocks + 1):
             x_patchified = self.patchify(x)
             x_patchified = self.blocks[i-1](x_patchified)

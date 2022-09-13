@@ -25,8 +25,13 @@ def init_model(cfg):
         qkv_bias=True,
     )
 
+    neck_params = dict(
+        in_dim = 768,
+        out_dims = [256, 256, 256, 256],
+    )
+
     head_params = dict(
-        in_channels=[128, 256, 512, 1024],
+        in_channels=[256, 256, 256, 256],
         in_index=[0, 1, 2, 3],
         channels=256,
         dropout_ratio=0.1,
@@ -40,6 +45,7 @@ def init_model(cfg):
         norm_radius=5,
         with_prev_mask=True,
         backbone_params=backbone_params,
+        neck_params=neck_params,
         head_params=head_params,
     )
 
