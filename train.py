@@ -47,7 +47,7 @@ def parse_args():
 
     parser.add_argument('--gpus', type=str, default='', required=False,
                         help='Ids of used GPUs. You should use either this argument or "--ngpus".')
-
+    
     parser.add_argument('--resume-exp', type=str, default=None,
                         help='The prefix of the name of the experiment to be continued. '
                              'If you use this field, you must specify the "--resume-prefix" argument.')
@@ -66,6 +66,13 @@ def parse_args():
                         help='Do not use this argument (for internal purposes).')
 
     parser.add_argument("--local_rank", type=int, default=0)
+
+    # parameters for experimenting
+    parser.add_argument('--layerwise-decay', action='store_true', 
+                        help='layer wise decay for transformer blocks.')
+
+    parser.add_argument('--upsample', type=str, default='x1', 
+                        help='upsample the output.')
 
     return parser.parse_args()
 

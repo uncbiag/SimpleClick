@@ -15,7 +15,7 @@ from isegm.utils.vis import draw_probmap, draw_points
 from isegm.utils.misc import save_checkpoint
 from isegm.utils.serialization import get_config_repr
 from isegm.utils.distributed import get_dp_wrapper, get_sampler, reduce_loss_dict
-from .optimizer import get_optimizer
+from .optimizer import get_optimizer, get_optimizer_with_layerwise_decay
 
 
 class ISTrainer(object):
@@ -23,6 +23,7 @@ class ISTrainer(object):
                  trainset, valset,
                  optimizer='adam',
                  optimizer_params=None,
+                 layerwise_decay=False,
                  image_dump_interval=200,
                  checkpoint_interval=10,
                  tb_dump_period=25,
@@ -83,7 +84,10 @@ class ISTrainer(object):
             num_workers=cfg.workers
         )
 
-        self.optim = get_optimizer(model, optimizer, optimizer_params)
+        if layerwise_decay:
+            self.optim = get_optimizer_with_layerwise_decay(model, optimizer, optimizer_params)
+        else:
+            self.optim = get_optimizer(model, optimizer, optimizer_params)
         model = self._load_weights(model)
 
         if cfg.multi_gpu:

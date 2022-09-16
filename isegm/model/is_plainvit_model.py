@@ -61,8 +61,8 @@ class PlainVitModel(ISModel):
     def __init__(
         self,
         backbone_params={},
-        head_params={},
         neck_params={}, 
+        head_params={},
         **kwargs
         ):
 
