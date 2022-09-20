@@ -223,12 +223,18 @@ class VisionTransformer(nn.Module):
  
         num_blocks = len(self.blocks)
         assert num_blocks % 6 == 0
+        is_patchified = False
         for i in range(1, num_blocks + 1):
-            x_patchified = self.patchify(x)
-            x_patchified = self.blocks[i-1](x_patchified)
-            if i % 6 == 0 or i == num_blocks:
-                x = self.unpatchify(x_patchified)
-                x = self.blocks[i-1](x)
+            if i % 6:
+                if not is_patchified:
+                    x = self.patchify(x)
+                    is_patchified = True
+                else:
+                    pass # do nothing
+            else:
+                x = self.unpatchify(x)
+                is_patchified = False
+            x = self.blocks[i-1](x)
         return x
 
     def forward(self, x):
