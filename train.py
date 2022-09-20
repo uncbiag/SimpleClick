@@ -74,6 +74,9 @@ def parse_args():
     parser.add_argument('--upsample', type=str, default='x1', 
                         help='upsample the output.')
 
+    parser.add_argument('--random-split', action='store_true', 
+                        help='random split the patch instead of window split.')
+
     return parser.parse_args()
 
 

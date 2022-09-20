@@ -63,10 +63,12 @@ class PlainVitModel(ISModel):
         backbone_params={},
         neck_params={}, 
         head_params={},
+        random_split=False,
         **kwargs
         ):
 
         super().__init__(**kwargs)
+        self.random_split = random_split
 
         self.patch_embed_coords = PatchEmbed(
             img_size= backbone_params['img_size'],
@@ -81,7 +83,7 @@ class PlainVitModel(ISModel):
 
     def backbone_forward(self, image, coord_features=None):
         coord_features = self.patch_embed_coords(coord_features)
-        backbone_features = self.backbone.forward_backbone(image, coord_features)
+        backbone_features = self.backbone.forward_backbone(image, coord_features, self.random_split)
 
         # Extract 4 stage backbone feature map: 1/4, 1/8, 1/16, 1/32
         B, N, C = backbone_features.shape

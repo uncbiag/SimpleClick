@@ -48,6 +48,7 @@ def init_model(cfg):
         backbone_params=backbone_params,
         neck_params=neck_params,
         head_params=head_params,
+        random_split=cfg.random_split,
     )
 
     model.backbone.init_weights_from_pretrained(cfg.IMAGENET_PRETRAINED_MODELS.MAE_BASE)

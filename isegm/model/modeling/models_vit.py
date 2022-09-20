@@ -185,6 +185,36 @@ class VisionTransformer(nn.Module):
     def no_weight_decay(self):
         return {'pos_embed', 'cls_token', 'dist_token'}
 
+    def shuffle(self, x):
+        """
+        in: x (B, N, C)
+        out: x_shuffle (B, N, C), ids_restore (B, N)
+        """
+        B, N, C = x.shape
+        noise = torch.rand(B, N, device=x.device)
+        ids_shuffle = torch.argsort(noise, dim=1)
+        ids_restore = torch.argsort(ids_shuffle, dim=1)
+
+        x_shuffle = torch.gather(x, 1, index=ids_shuffle.unsqueeze(-1).repeat(1, 1, C))
+
+        return x_shuffle, ids_restore
+
+    def unshuffle(self, x, ids_restore):
+        B, N, C = x.shape
+        x_unshuffle = torch.gather(x, 1, index=ids_restore.unsqueeze(-1).repeat(1, 1, C))
+
+        return x_unshuffle
+
+    def split(self, x):
+        B, N, C = x.shape
+        num_tokens_per_split = 224 * 224
+        num_splits = max(1, N // num_tokens_per_split)
+        out = []
+        for i in range(num_splits):
+            if i == num_splits - 1:
+                out.append(x[:, i*num_tokens_per_split:])
+                return out
+            out.append(x[:, i*num_tokens_per_split:(i+1)*num_tokens_per_split])
 
     def patchify(self, x):
         """
@@ -213,28 +243,35 @@ class VisionTransformer(nn.Module):
 
         return x
 
-
-    def forward_backbone(self, x, additional_features=None):
+    def forward_backbone(self, x, additional_features=None, shuffle=False):
         x = self.patch_embed(x)
         if additional_features is not None:
             x += additional_features
 
         x = self.pos_drop(x + self.pos_embed[:, 1:])
- 
         num_blocks = len(self.blocks)
-        assert num_blocks % 6 == 0
-        is_patchified = False
-        for i in range(1, num_blocks + 1):
-            if i % 6:
-                if not is_patchified:
-                    x = self.patchify(x)
-                    is_patchified = True
+
+        if shuffle:
+            for i in range(1, num_blocks + 1):
+                x, ids_restore = self.shuffle(x)
+                x_split = self.split(x)
+                x_split = [self.blocks[i-1](x_split[j]) for j in range(len(x_split))]
+                x = torch.cat(x_split, dim=1)
+                x = self.unshuffle(x, ids_restore)
+        else:
+            assert num_blocks % 6 == 0
+            is_patchified = False
+            for i in range(1, num_blocks + 1):
+                if i % 6:
+                    if not is_patchified:
+                        x = self.patchify(x)
+                        is_patchified = True
+                    else:
+                        pass # do nothing
                 else:
-                    pass # do nothing
-            else:
-                x = self.unpatchify(x)
-                is_patchified = False
-            x = self.blocks[i-1](x)
+                    x = self.unpatchify(x)
+                    is_patchified = False
+                x = self.blocks[i-1](x)
         return x
 
     def forward(self, x):
