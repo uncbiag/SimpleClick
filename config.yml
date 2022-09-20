@@ -4,7 +4,7 @@
 # INTERACTIVE_MODELS_PATH: "/playpen-raid/qinliu/models/model_0207_2022/iter_mask/cocolvis_swinformer_base/000_cocolvis_swin_base/checkpoints"
 # INTERACTIVE_MODELS_PATH: /playpen-raid2/qinliu/models/model_0907_2022/iter_mask/cocolvis_plainvit_base/000/checkpoints
 INTERACTIVE_MODELS_PATH: playpen-raid2/qinliu/models/model_0908_2022/iter_mask/cocolvis_plainvit_large/004/checkpoints/
-EXPS_PATH: "/playpen-raid2/qinliu/models/model_0909_2022"
+EXPS_PATH: "/playpen-raid2/qinliu/models/model_0920_2022"
 
 # Evaluation datasets
 GRABCUT_PATH: "/playpen-raid2/qinliu/data/GrabCut"
