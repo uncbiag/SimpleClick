@@ -33,11 +33,12 @@ def init_model(cfg):
     head_params = dict(
         in_channels=[128, 256, 512, 1024],
         in_index=[0, 1, 2, 3],
-        channels=256,
         dropout_ratio=0.1,
         num_classes=1,
         loss_decode=CrossEntropyLoss(),
         align_corners=False,
+        upsample=cfg.upsample,
+        channels={'x1':256, 'x2': 128, 'x4': 64}[cfg.upsample],
     )
 
     model = PlainVitModel(
@@ -47,6 +48,7 @@ def init_model(cfg):
         backbone_params=backbone_params,
         neck_params=neck_params,
         head_params=head_params,
+        random_split=cfg.random_split,
     )
 
     model.backbone.init_weights_from_pretrained(cfg.IMAGENET_PRETRAINED_MODELS.MAE_BASE)
@@ -107,16 +109,16 @@ def train(model, cfg, model_cfg):
     }
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
-                           milestones=[49, 55], gamma=0.1)
+                           milestones=[200, 220], gamma=0.1)
     trainer = ISTrainer(model, cfg, model_cfg, loss_cfg,
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
                         layerwise_decay=cfg.layerwise_decay,
                         lr_scheduler=lr_scheduler,
-                        checkpoint_interval=[(0, 20), (49, 1)],
+                        checkpoint_interval=[(0, 50), (200, 10)],
                         image_dump_interval=300,
                         metrics=[AdaptiveIoU()],
                         max_interactive_points=model_cfg.num_max_points,
                         max_num_next_clicks=3)
-    trainer.run(num_epochs=55, validation=False)
+    trainer.run(num_epochs=230, validation=False)
