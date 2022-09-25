@@ -105,20 +105,20 @@ def train(model, cfg, model_cfg):
     )
 
     optimizer_params = {
-        'lr': 5e-4, 'betas': (0.9, 0.999), 'eps': 1e-8,
+        'lr': 5e-5, 'betas': (0.9, 0.999), 'eps': 1e-8,
     }
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
-                           milestones=[200, 220], gamma=0.1)
+                           milestones=[50, 55], gamma=0.1)
     trainer = ISTrainer(model, cfg, model_cfg, loss_cfg,
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
                         layerwise_decay=cfg.layerwise_decay,
                         lr_scheduler=lr_scheduler,
-                        checkpoint_interval=[(0, 50), (200, 10)],
+                        checkpoint_interval=[(0, 20), (50, 1)],
                         image_dump_interval=300,
                         metrics=[AdaptiveIoU()],
                         max_interactive_points=model_cfg.num_max_points,
                         max_num_next_clicks=3)
-    trainer.run(num_epochs=230, validation=False)
+    trainer.run(num_epochs=55, validation=False)

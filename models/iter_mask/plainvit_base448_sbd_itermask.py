@@ -109,7 +109,7 @@ def train(model, cfg, model_cfg):
     )
 
     optimizer_params = {
-        'lr': 5e-4, 'betas': (0.9, 0.999), 'eps': 1e-8
+        'lr': 5e-5, 'betas': (0.9, 0.999), 'eps': 1e-8
     }
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,

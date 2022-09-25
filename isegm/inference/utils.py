@@ -21,6 +21,8 @@ def get_time_metrics(all_ious, elapsed_time):
 def load_is_model(checkpoint, device, **kwargs):
     if isinstance(checkpoint, (str, Path)):
         state_dict = torch.load(checkpoint, map_location='cpu')
+        print("Load pre-trained checkpoint from: %s" % checkpoint)
+
     else:
         state_dict = checkpoint
 

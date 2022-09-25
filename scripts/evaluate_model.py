@@ -7,12 +7,14 @@ import cv2
 import torch
 import numpy as np
 
+
 sys.path.insert(0, '.')
 from isegm.inference import utils
 from isegm.utils.exp import load_config_file
 from isegm.utils.vis import draw_probmap, draw_with_blend_and_clicks
 from isegm.inference.predictors import get_predictor
 from isegm.inference.evaluation import evaluate_dataset
+from isegm.model.modeling.pos_embed import interpolate_pos_embed_inference
 
 
 def parse_args():
@@ -105,6 +107,9 @@ def main():
             model = utils.load_is_model(checkpoint_path, args.device)
 
             predictor_params, zoomin_params = get_predictor_and_zoomin_params(args, dataset_name)
+
+            interpolate_pos_embed_inference(model.backbone, zoomin_params['target_size'], args.device)
+
             predictor = get_predictor(model, args.mode, args.device,
                                       prob_thresh=args.thresh,
                                       predictor_params=predictor_params,
@@ -142,7 +147,8 @@ def get_predictor_and_zoomin_params(args, dataset_name, apply_zoom_in=True):
     if apply_zoom_in:
         if args.eval_mode == 'cvpr':
             zoom_in_params = {
-                'target_size': 600 if dataset_name == 'DAVIS' else 400
+                'skip_clicks': -1,
+                'target_size': (672, 672) if dataset_name == 'DAVIS' else (448, 448)
             }
         elif args.eval_mode.startswith('fixed'):
             crop_size = int(args.eval_mode[5:])

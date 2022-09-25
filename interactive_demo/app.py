@@ -51,7 +51,7 @@ class InteractiveDemoApp(ttk.Frame):
                 'use_zoom_in': tk.BooleanVar(value=True),
                 'fixed_crop': tk.BooleanVar(value=True),
                 'skip_clicks': tk.IntVar(value=-1),
-                'target_size': tk.IntVar(value=min(400, self.limit_longest_size)),
+                'target_size': tk.IntVar(value=448), #tk.IntVar(value=min(400, self.limit_longest_size)),
                 'expansion_ratio': tk.DoubleVar(value=1.4)
             },
 

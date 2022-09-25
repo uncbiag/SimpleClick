@@ -1,7 +1,7 @@
 from isegm.utils.exp_imports.default import *
 from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
 
-MODEL_NAME = 'cocolvis_vit_large448'
+MODEL_NAME = 'sbd_vit_large448'
 
 
 def main(cfg):
@@ -38,7 +38,7 @@ def init_model(cfg):
         loss_decode=CrossEntropyLoss(),
         align_corners=False,
         upsample=cfg.upsample,
-        channels={'x1': 256, 'x2': 128, 'x4': 64}[cfg.upsample],
+        channels={'x1':256, 'x2': 128, 'x4': 64}[cfg.upsample]
     )
 
     model = PlainVitModel(
@@ -67,8 +67,11 @@ def train(model, cfg, model_cfg):
     loss_cfg.instance_loss_weight = 1.0
 
     train_augmentator = Compose([
-        UniformRandomResize(scale_range=(0.75, 1.40)),
-        HorizontalFlip(),
+        UniformRandomResize(scale_range=(0.75, 1.25)),
+        Flip(),
+        RandomRotate90(),
+        ShiftScaleRotate(shift_limit=0.03, scale_limit=0,
+                         rotate_limit=(-3, 3), border_mode=0, p=0.75),
         PadIfNeeded(min_height=crop_size[0], min_width=crop_size[1], border_mode=0),
         RandomCrop(*crop_size),
         RandomBrightnessContrast(brightness_limit=(-0.25, 0.25), contrast_limit=(-0.15, 0.4), p=0.75),
@@ -76,6 +79,7 @@ def train(model, cfg, model_cfg):
     ], p=1.0)
 
     val_augmentator = Compose([
+        UniformRandomResize(scale_range=(0.75, 1.25)),
         PadIfNeeded(min_height=crop_size[0], min_width=crop_size[1], border_mode=0),
         RandomCrop(*crop_size)
     ], p=1.0)
@@ -84,24 +88,24 @@ def train(model, cfg, model_cfg):
                                        merge_objects_prob=0.15,
                                        max_num_merged_objects=2)
 
-    trainset = CocoLvisDataset(
-        cfg.LVIS_v1_PATH,
+    trainset = SBDDataset(
+        cfg.SBD_PATH,
         split='train',
         augmentator=train_augmentator,
-        min_object_area=1000,
-        keep_background_prob=0.05,
+        min_object_area=80,
+        keep_background_prob=0.01,
         points_sampler=points_sampler,
-        epoch_len=30000,
-        stuff_prob=0.30
+        samples_scores_path='./assets/sbd_samples_weights.pkl',
+        samples_scores_gamma=1.25
     )
 
-    valset = CocoLvisDataset(
-        cfg.LVIS_v1_PATH,
+    valset = SBDDataset(
+        cfg.SBD_PATH,
         split='val',
         augmentator=val_augmentator,
-        min_object_area=1000,
+        min_object_area=80,
         points_sampler=points_sampler,
-        epoch_len=2000
+        epoch_len=500
     )
 
     optimizer_params = {
