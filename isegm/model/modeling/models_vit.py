@@ -216,6 +216,7 @@ class VisionTransformer(nn.Module):
                 return out
             out.append(x[:, i*num_tokens_per_split:(i+1)*num_tokens_per_split])
 
+    # window split for finetuning on larger size (the pretraining size should be 224 x 224)
     def patchify(self, x):
         """
         in: (B, N, C)
@@ -223,21 +224,26 @@ class VisionTransformer(nn.Module):
         """
         B, N, C = x.shape
         grid_h, grid_w = self.patch_embed.grid_size
-        win_h, win_w = grid_h // 14, grid_w // 14
+        win_h_grid = 224 // self.patch_embed.patch_size[0]
+        win_w_grid = 224 // self.patch_embed.patch_size[1]
+        win_h, win_w = grid_h // win_h_grid, grid_w // win_w_grid
         x = x.view(B, win_h, grid_h // win_h, win_w, grid_w // win_w, C)
         x_patchified = x.permute((0, 1, 3, 2, 4, 5)).contiguous()
         x_patchified = x_patchified.view(B * win_h * win_w, grid_h * grid_w // (win_h * win_w), C)
 
         return x_patchified
 
+    # recover the window split
     def unpatchify(self, x):
         """
-        in: (B*4, N//(win_h*win_w), C)
+        in: (B*win_h*win_w, N//(win_h*win_w), C)
         out: (B, N, C)
         """
         B, N, C = x.shape
         grid_h, grid_w = self.patch_embed.grid_size
-        win_h, win_w = grid_h // 14, grid_w // 14
+        win_h_grid = 224 // self.patch_embed.patch_size[0]
+        win_w_grid = 224 // self.patch_embed.patch_size[1]
+        win_h, win_w = grid_h // win_h_grid, grid_w // win_w_grid
         x = x.view(B // (win_h * win_w), win_h, win_w, grid_h // win_h, grid_w // win_w, C)
         x = x.permute((0, 1, 3, 2, 4, 5)).contiguous().view(B // (win_h * win_w), win_h * win_w * N, C)
 
@@ -250,6 +256,7 @@ class VisionTransformer(nn.Module):
 
         x = self.pos_drop(x + self.pos_embed[:, 1:])
         num_blocks = len(self.blocks)
+        assert num_blocks % 4 == 0
 
         if shuffle:
             for i in range(1, num_blocks + 1):
@@ -259,10 +266,10 @@ class VisionTransformer(nn.Module):
                 x = torch.cat(x_split, dim=1)
                 x = self.unshuffle(x, ids_restore)
         else:
-            assert num_blocks % 6 == 0
+            num_blocks_per_group = 6 if num_blocks == 12 else num_blocks // 4
             is_patchified = False
             for i in range(1, num_blocks + 1):
-                if i % 6:
+                if i % num_blocks_per_group:
                     if not is_patchified:
                         x = self.patchify(x)
                         is_patchified = True
