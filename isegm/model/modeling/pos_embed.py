@@ -113,7 +113,7 @@ def interpolate_pos_embed_inference(model, infer_img_size, device):
     # height (== width) for the backbone position embedding
     orig_size, new_size = grid_size[0], infer_grid_size[0]
     if orig_size != new_size:
-        print("Position interpolate from %dx%d to %dx%d" % (orig_size, orig_size, new_size, new_size))
+        # print("Position interpolate from %dx%d to %dx%d" % (orig_size, orig_size, new_size, new_size))
         extra_tokens = pos_embed[:, :num_extra_tokens]
         # only the position tokens are interpolated
         pos_tokens = pos_embed[:, num_extra_tokens:]
