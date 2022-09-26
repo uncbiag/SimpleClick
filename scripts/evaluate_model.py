@@ -56,7 +56,7 @@ def parse_args():
                         help='The segmentation mask is obtained from the probability outputs using this threshold.')
     parser.add_argument('--clicks-limit', type=int, default=None)
     parser.add_argument('--eval-mode', type=str, default='cvpr',
-                        help='Possible choices: cvpr, fixed<number> (e.g. fixed400, fixed600).')
+                        help="Possible choices: cvpr, fixed<number>, or fixed<number>,<number>,(e.g. fixed400, fixed400,600).")
 
     parser.add_argument('--save-ious', action='store_true', default=False)
     parser.add_argument('--print-ious', action='store_true', default=False)
@@ -151,10 +151,14 @@ def get_predictor_and_zoomin_params(args, dataset_name, apply_zoom_in=True):
                 'target_size': (672, 672) if dataset_name == 'DAVIS' else (448, 448)
             }
         elif args.eval_mode.startswith('fixed'):
-            crop_size = int(args.eval_mode[5:])
+            crop_size = args.eval_mode.split(',')
+            crop_size_h = int(crop_size[0][5:])
+            crop_size_w = crop_size_h
+            if len(crop_size) == 2:
+                crop_size_w = int(crop_size[1])
             zoom_in_params = {
                 'skip_clicks': -1,
-                'target_size': (crop_size, crop_size)
+                'target_size': (crop_size_h, crop_size_w)
             }
         else:
             raise NotImplementedError

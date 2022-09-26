@@ -87,10 +87,9 @@ class PlainVitModel(ISModel):
 
         # Extract 4 stage backbone feature map: 1/4, 1/8, 1/16, 1/32
         B, N, C = backbone_features.shape
-        M = int(math.sqrt(N))
-        assert M * M == N
+        grid_size = self.backbone.patch_embed.grid_size
 
-        backbone_features = backbone_features.transpose(-1,-2).view(B, C, M, M)
+        backbone_features = backbone_features.transpose(-1,-2).view(B, C, grid_size[0], grid_size[1])
         multi_scale_features = self.neck(backbone_features)
 
         return {'instances': self.head(multi_scale_features), 'instances_aux': None}

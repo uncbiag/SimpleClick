@@ -110,16 +110,16 @@ def interpolate_pos_embed_inference(model, infer_img_size, device):
     infer_grid_size = (infer_img_size[0] // patch_size[0], \
         infer_img_size[1] // patch_size[1])
 
-    # height (== width) for the backbone position embedding
-    orig_size, new_size = grid_size[0], infer_grid_size[0]
+    orig_size, new_size = grid_size, infer_grid_size
     if orig_size != new_size:
-        # print("Position interpolate from %dx%d to %dx%d" % (orig_size, orig_size, new_size, new_size))
+        # print("Position interpolate from %dx%d to %dx%d" % (orig_size[0], orig_size[1], 
+        #     new_size[0], new_size[1]))
         extra_tokens = pos_embed[:, :num_extra_tokens]
         # only the position tokens are interpolated
         pos_tokens = pos_embed[:, num_extra_tokens:]
-        pos_tokens = pos_tokens.reshape(-1, orig_size, orig_size, embedding_size).permute(0, 3, 1, 2)
+        pos_tokens = pos_tokens.reshape(-1, orig_size[0], orig_size[1], embedding_size).permute(0, 3, 1, 2)
         pos_tokens = torch.nn.functional.interpolate(
-            pos_tokens, size=(new_size, new_size), mode='bicubic', align_corners=False)
+            pos_tokens, size=new_size, mode='bicubic', align_corners=False)
         pos_tokens = pos_tokens.permute(0, 2, 3, 1).flatten(1, 2)
         new_pos_embed = torch.cat((extra_tokens, pos_tokens), dim=1)
         new_pos_embed = torch.nn.Parameter(new_pos_embed).to(device)
