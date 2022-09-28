@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
+
 sys.path.insert(0, '.')
 from isegm.utils.exp import load_config_file
 
@@ -21,8 +21,6 @@ def parse_args():
                                 help='Path to folder with .pickle files.')
     group_pkl_path.add_argument('--files', nargs='+', default=None,
                                 help='List of paths to .pickle files separated by space.')
-    group_pkl_path.add_argument('--names', nargs='+', default=None,
-                                help='List of paths to .pickle files separated by space.')
     group_pkl_path.add_argument('--model-dirs', nargs='+', default=None,
                                 help="List of paths to model directories with 'plots' folder "
                                      "containing .pickle files separated by space.")
@@ -31,7 +29,6 @@ def parse_args():
                                      'For each experiment, the checkpoint prefix must be specified '
                                      'by using the ":" delimiter at the end.')
 
-    parser.add_argument('--dataset', type=str, default='')
     parser.add_argument('--mode', choices=['NoBRS', 'RGB-BRS', 'DistMap-BRS',
                                            'f-BRS-A', 'f-BRS-B', 'f-BRS-C'],
                         default=None, nargs='*', help='')
@@ -67,21 +64,14 @@ def main():
     args, cfg = parse_args()
 
     files_list = get_files_list(args, cfg)
-    print(files_list, len(files_list))
-    model_names = ['RITM HRNet18 (SBD)', 'RITM HRNet32 (C+L)', 'Ours HRNet32 (C+L)']
-    dataset_name = args.dataset
 
     # Dict of dicts with mapping dataset_name -> model_name -> results
     aggregated_plot_data = defaultdict(dict)
-    for idx, file in enumerate(files_list):
-        print(file, idx)
+    for file in files_list:
         with open(file, 'rb') as f:
             data = pickle.load(f)
-
-        data = [x[:args.n_clicks] for x in data]
-        model_name = model_names[idx]
-
-        aggregated_plot_data[dataset_name][model_name] = np.array(data).mean(0)
+        data['all_ious'] = [x[:args.n_clicks] for x in data['all_ious']]
+        aggregated_plot_data[data['dataset_name']][data['model_name']] = np.array(data['all_ious']).mean(0)
 
     for dataset_name, dataset_results in aggregated_plot_data.items():
         plt.figure(figsize=(12, 7))
@@ -89,18 +79,7 @@ def main():
         max_clicks = 0
         for model_name, model_results in dataset_results.items():
             if args.n_clicks != -1:
-                model_results = model_results[:args.n_clicks] * 100
-
-                # cheating
-                if dataset_name == 'GrabCut' and model_name == 'Ours HRNet32 (C+L)':
-                    model_results[0] += 0.3
-                    model_results[1] += 0.5
-                    model_results[2] += 1.4
-
-                if dataset_name == 'BraTS' and model_name == 'Ours HRNet32 (C+L)':
-                    model_results[0] += 3
-                    model_results[1] += 3
-
+                model_results = model_results[:args.n_clicks]
 
             n_clicks = len(model_results)
             max_clicks = max(max_clicks, n_clicks)
@@ -111,14 +90,11 @@ def main():
 
             plt.plot(1 + np.arange(n_clicks), model_results, linewidth=2, label=model_name)
 
-        plt.title(f'{dataset_name}', fontsize=22)
+        plt.title(f'mIoU after every click for {dataset_name}', fontsize='x-large')
         plt.grid()
-        plt.legend(loc=4, fontsize=22)
-        plt.yticks(fontsize=22)
-        plt.xticks(1 + np.arange(max_clicks), fontsize=22)
-        plt.xlabel('Number of Clicks', fontsize=22)
-        plt.ylabel('mIoU score (%)', fontsize=22)
-        plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+        plt.legend(loc=4, fontsize='x-large')
+        plt.yticks(fontsize='x-large')
+        plt.xticks(1 + np.arange(max_clicks), fontsize='x-large')
 
         fig_path = get_target_file_path(args.plots_path, dataset_name)
         plt.savefig(str(fig_path))
@@ -138,12 +114,12 @@ def get_files_list(args, cfg):
     if args.folder is not None:
         files_list = Path(args.folder).glob('*.pickle')
     elif args.files is not None:
-        files_list = [Path(file) for file in args.files]
+        files_list = args.files
     elif args.model_dirs is not None:
         files_list = []
         for folder in args.model_dirs:
-            folder = Path(folder) / 'ious'
-            files_list.extend(folder.glob('*.pkl'))
+            folder = Path(folder) / 'plots'
+            files_list.extend(folder.glob('*.pickle'))
     elif args.exp_models is not None:
         files_list = []
         for rel_exp_path in args.exp_models:
