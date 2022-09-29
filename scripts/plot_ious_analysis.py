@@ -8,10 +8,10 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 
 sys.path.insert(0, '.')
 from isegm.utils.exp import load_config_file
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -77,9 +77,14 @@ def main():
         plt.figure(figsize=(12, 7))
 
         max_clicks = 0
+        min_val, max_val = 100, -1
         for model_name, model_results in dataset_results.items():
             if args.n_clicks != -1:
                 model_results = model_results[:args.n_clicks]
+            model_results = model_results * 100 
+
+            min_val = min(min_val, min(model_results))
+            max_val = max(max_val, max(model_results))
 
             n_clicks = len(model_results)
             max_clicks = max(max_clicks, n_clicks)
@@ -90,11 +95,14 @@ def main():
 
             plt.plot(1 + np.arange(n_clicks), model_results, linewidth=2, label=model_name)
 
-        plt.title(f'mIoU after every click for {dataset_name}', fontsize='x-large')
+        plt.title(f'{dataset_name}', fontsize='xx-large')
         plt.grid()
         plt.legend(loc=4, fontsize='x-large')
-        plt.yticks(fontsize='x-large')
+        plt.yticks(np.arange(min_val, max_val), fontsize='x-large')
         plt.xticks(1 + np.arange(max_clicks), fontsize='x-large')
+        plt.xlabel('Number of Clicks', fontsize='x-large')
+        plt.ylabel('mIoU score (%)', fontsize='x-large')
+        plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
 
         fig_path = get_target_file_path(args.plots_path, dataset_name)
         plt.savefig(str(fig_path))
