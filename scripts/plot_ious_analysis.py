@@ -70,7 +70,7 @@ def main():
     for file in files_list:
         with open(file, 'rb') as f:
             data = pickle.load(f)
-        data['all_ious'] = [x[:args.n_clicks] for x in data['all_ious']]
+        data['all_ious'] = [x[:] if args.n_clicks == -1 else x[:args.n_clicks] for x in data['all_ious']]
         aggregated_plot_data[data['dataset_name']][data['model_name']] = np.array(data['all_ious']).mean(0)
 
     for dataset_name, dataset_results in aggregated_plot_data.items():
@@ -114,7 +114,7 @@ def get_files_list(args, cfg):
     if args.folder is not None:
         files_list = Path(args.folder).glob('*.pickle')
     elif args.files is not None:
-        files_list = args.files
+        files_list = [Path(file) for file in args.files]
     elif args.model_dirs is not None:
         files_list = []
         for folder in args.model_dirs:
