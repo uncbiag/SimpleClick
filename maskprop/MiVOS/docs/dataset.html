@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+  <title>MiVOS Project Website</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body>
+  <nav class="blue lighten-2" role="navigation">
+    <div class="nav-wrapper container">
+    </div>
+  </nav>
+  <div class="section no-pad-bot" id="index-banner">
+    <div class="container">
+      <br><br>
+      <h5 class="header center blue-text text-darken-2">Modular Interactive Video Object Segmentation: <br> Interaction-to-Mask, Propagation and Difference-Aware Fusion</h5>
+    </div>
+    <div class="row center">
+      <h5 class="header col s12 light">BL30K Dataset</h5>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="section">
+
+    <div class="row center">
+      <div class="col s12 m4 l4 center">
+      <figure>
+        <video preload="auto" autoplay muted loop class="videoInsert">
+          <source src="https://i.imgur.com/6rwmq1I.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </figure>
+      </div>
+      
+      <div class="col s12 m4 l4 center">
+      <figure>
+        <video preload="auto" autoplay muted loop class="videoInsert">
+          <source src="https://i.imgur.com/aN3eDiv.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </video>
+      </figure>
+      </div>
+
+      <div class="col s12 m4 l4 center">
+      <figure>
+        <video preload="auto" autoplay muted loop class="videoInsert">
+          <source src="https://i.imgur.com/wZJbCqT.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </figure>
+      </div>
+    </div>
+
+    <div class="row center">
+      <div class="col s12 m4 l4 center">
+      <figure>
+        <video preload="auto" autoplay muted loop class="videoInsert">
+          <source src="https://i.imgur.com/Sl9yPN2.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </figure>
+      </div>
+      
+      <div class="col s12 m4 l4 center">
+      <figure>
+        <video preload="auto" autoplay muted loop class="videoInsert">
+          <source src="https://i.imgur.com/Lv0BkjK.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </video>
+      </figure>
+      </div>
+      
+      <div class="col s12 m4 l4 center">
+      <figure>
+        <video preload="auto" autoplay muted loop class="videoInsert">
+          <source src="https://i.imgur.com/N9iiBG0.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </figure>
+      </div>
+    </div>
+
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <div class="col s12 l10 push-l1 xl8 push-xl2">
+        <h5 class="header">BL30K: </h1>
+        <ul>
+          <li>- 29,989 synthetic videos using 51,300 animated 3D models</li>
+          <li>- Each video has 160 frames</li>
+          <li>- Each frame has a resolution of 768*512, with pixel-accurate annotation</li>
+          <li>- 3-5 objects per video</li>
+          <li>- Object intersections are minimized using a greedy avoidance algorithm</li>
+        </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <div class="col s12 l10 push-l1 xl8 push-xl2">
+        <h5 class="header">Download: </h1>
+        <p>
+          We break the dataset into six segments, each with approximately 5K videos. We noted that using probably half of the data is sufficient to reach full performance (although we still used all), but using less than one-sixth (5K) is insufficient.
+        </p>
+
+        <p>
+          Each segment is about 115GB in size -- 700GB in total.
+          Google Drive is much faster in my experience. Your mileage might vary.
+        </p>
+
+        <a href="https://drive.google.com/drive/folders/1KxriFZM8Y_-KbiA3D0PaMv6LQaatKFH-?usp=sharing" class="larger-text">[Google Drive]</a>
+        &nbsp;&nbsp;&nbsp;
+        <a href="https://uillinoisedu-my.sharepoint.com/:f:/g/personal/hokeikc2_illinois_edu/ElEqJXQqaqZAqG8QROa0VesBAw4FiOl5wleP2iq_KXDPyw?e=eKMSbx" class="larger-text">[OneDrive]</a>
+
+        <br>
+        Or you can use the Python script (<code>download_bl30k.py</code>) provided in <a href="https://github.com/hkchengrex/MiVOS" class="larger-text">[this repo]</a> for automatic download and extraction. The script uses Google Drive links.
+        
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="row">
+        <div class="col s12 l10 push-l1 xl8 push-xl2">
+        <h5 class="header">If you use this dataset, please cite our paper: </h1>
+        <p><pre><code>
+@inproceedings{MiVOS_2021,
+  title={Modular Interactive Video Object Segmentation: Interaction-to-Mask, Propagation and Difference-Aware Fusion},
+  author={Cheng, Ho Kei and Tai, Yu-Wing and Tang, Chi-Keung},
+  booktitle={CVPR},
+  year={2021}
+}
+        </pre></code>
+        </p>
+  
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="page-footer blue">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+            <h5 class="white-text">Contact</h5>
+            <p class="grey-text text-lighten-4">
+                Ho Kei Cheng (<a href = "mailto: hkchengrex@gmail.com" style="color:#a6d9fc;">hkchengrex@gmail.com</a>)
+            </p>
+        </div>
+      </div>
+    </div>
+    <div class="footer-copyright blue">
+    </div>
+  </footer>
+
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="js/materialize.js"></script>
+  <script src="js/init.js"></script>
+
+  </body>
+</html>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('.materialboxed');
+    var instances = M.Materialbox.init(elems, {});
+  });
+
+  // Or with jQuery
+
+  $(document).ready(function(){
+    $('.materialboxed').materialbox();
+  });
+</script>
