@@ -60,6 +60,15 @@ def parse_args():
     return args, cfg
 
 
+model_name_mapper = {'sbd_vitb_epoch_54_NoBRS': 'Ours-ViT-B (SBD)', 
+                     'sbd_vitl_epoch_54_NoBRS': 'Ours-ViT-L (SBD)',
+                     'sbd_vith_epoch_54_NoBRS': 'Ours-ViT-H (SBD)',
+                     'cocolvis_vitb_epoch_54_NoBRS': 'Ours-ViT-B (C+L)',
+                     'cocolvis_vitl_epoch_54_NoBRS': 'Ours-ViT-L (C+L)',
+                     '052_NoBRS': 'Ours-ViT-H (C+L)',
+                     'sbd_h18_itermask_NoBRS': 'RITM-HRNet18 (SBD)',
+                     'coco_lvis_h32_itermask_NoBRS': 'RITM-HRNet32 (C+L)'}
+
 def main():
     args, cfg = parse_args()
 
@@ -92,16 +101,16 @@ def main():
             miou_str = ' '.join([f'mIoU@{click_id}={model_results[click_id-1]:.2%};'
                                  for click_id in [1, 3, 5, 10, 20] if click_id <= len(model_results)])
             print(f'{model_name} on {dataset_name}:\n{miou_str}\n')
+            plt.plot(1 + np.arange(n_clicks), model_results, linewidth=2, 
+                label=model_name_mapper[model_name] if model_name in model_name_mapper else model_name)
 
-            plt.plot(1 + np.arange(n_clicks), model_results, linewidth=2, label=model_name)
-
-        plt.title(f'{dataset_name}', fontsize='xx-large')
+        plt.title(f'{dataset_name}', fontsize=22)
         plt.grid()
-        plt.legend(loc=4, fontsize='x-large')
-        plt.yticks(np.arange(min_val, max_val), fontsize='x-large')
-        plt.xticks(1 + np.arange(max_clicks), fontsize='x-large')
-        plt.xlabel('Number of Clicks', fontsize='x-large')
-        plt.ylabel('mIoU score (%)', fontsize='x-large')
+        plt.legend(loc=4, fontsize='xx-large')
+        plt.yticks(np.arange(80+0*min_val, 102 + 0*max_val, step=2), fontsize='xx-large')
+        plt.xticks(1 + np.arange(max_clicks), fontsize='xx-large')
+        plt.xlabel('Number of Clicks', fontsize='xx-large')
+        plt.ylabel('mIoU score (%)', fontsize='xx-large')
         plt.gca().yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
 
         fig_path = get_target_file_path(args.plots_path, dataset_name)
