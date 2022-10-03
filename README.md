@@ -22,7 +22,7 @@ OAI-ZIB dataset (150 cases): [Google Drive](https://drive.google.com/drive/folde
 Other datasets: [RITM Github](https://github.com/saic-vul/ritm_interactive_segmentation)
 
 ## Notes
-This repository is under active development.
+[10/02/2022] Release the main models. This repository is still under active development.
 
 ## License
 The code is released under the MIT License. It is a short, permissive software license. Basically, you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source. 
