@@ -1,10 +1,7 @@
-## [iSegFormer: Interactive Image Segmentation via Transformers with Application to 3D Knee MR Images](https://arxiv.org/abs/2112.11325)
+## [SimpleClick: Interactive Image Segmentation with Simple Vision Transformers](https://arxiv.org)
 <p align="center">
-    <a href="https://arxiv.org/abs/2112.11325">
+    <a href="https://arxiv.org">
         <img src="https://img.shields.io/badge/arXiv-2102.06583-b31b1b"/>
-    </a>
-    <a href="https://colab.research.google.com/github/qinliuliuqin/iSegFormer/blob/main/notebooks/colab_test_isegformer.ipynb">
-        <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
     </a>
     <a href="https://opensource.org/licenses/MIT">
         <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="The MIT License"/>
@@ -12,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="./assets/img/iSegFormer.png" alt="drawing", width="650"/>
+  <img src="./assets/img/simpleclick_framework.png" alt="drawing", width="650"/>
 </p>
 
 ## Installation
