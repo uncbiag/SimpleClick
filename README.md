@@ -15,6 +15,12 @@
 ## Download 
 Pre-trained SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
 
+BraTS dataset (369 cases): [Google Drive](https://drive.google.com/drive/folders/1B6y1nNBnWU09EhxvjaTdp1XGjc1T6wUk?usp=sharing) 
+
+OAI-ZIB dataset (150 cases): [Google Drive](https://drive.google.com/drive/folders/1B6y1nNBnWU09EhxvjaTdp1XGjc1T6wUk?usp=sharing)
+
+Other datasets: [RITM Github](https://github.com/saic-vul/ritm_interactive_segmentation)
+
 ## Notes
 This repository is under active development.
 
