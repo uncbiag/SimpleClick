@@ -12,6 +12,9 @@
   <img src="./assets/img/simpleclick_framework.png" alt="drawing", width="650"/>
 </p>
 
+## Download 
+Pre-trained SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
+
 ## Notes
 This repository is under active development.
 
