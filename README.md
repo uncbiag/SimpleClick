@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="./assets/img/simpleclick_framework.png" alt="drawing", width="650"/>
+  <img src="./assets/demo_sheep.gif" alt="drawing", width="650"/>
 </p>
 
 ## Download 
