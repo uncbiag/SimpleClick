@@ -68,6 +68,8 @@ def get_dataset(dataset_name, cfg):
         dataset = ssTEMDataset(cfg.ssTEM_PATH)
     elif dataset_name == 'OAIZIB':
         dataset = OAIZIBDataset(cfg.OAIZIB_PATH)
+    # elif dataset_name == 'FailureCase':
+    #     dataset = FailureDataset(cfg.)
     else:
         dataset = None
 
