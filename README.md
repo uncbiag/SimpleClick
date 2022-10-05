@@ -16,6 +16,7 @@
 ## Demo
 <p align="center">
   <img src="./assets/demo_sheep.gif" alt="drawing", width="500"/>
+  <p align="center"> Model: cocolvis_vit_huge.pth </p>
 </p>
 
 ## Download 
