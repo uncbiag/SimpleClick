@@ -10,6 +10,7 @@ BraTS_PATH: "/playpen-raid/qinliu/data/BraTS20"
 ssTEM_PATH: "/playpen-raid/qinliu/data/ssTEM"
 OAIZIB_PATH: "/playpen-raid2/qinliu/data/OAI-ZIB"
 OAI_PATH: "/playpen-raid2/qinliu/data/OAI"
+HARD_PATH: "/playpen-raid2/qinliu/data/HARD"
 
 # Train datasets
 SBD_PATH: "/playpen-raid/qinliu/data/SBD/dataset"

@@ -8,8 +8,7 @@ python scripts/evaluate_model.py NoBRS \
 --gpu=0 \
 --checkpoint=${MODEL_PATH} \
 --eval-mode=cvpr \
---datasets=DAVIS \
---vis-preds
-
-# \
-# --iou-analysis
+--datasets=GrabCut \
+--vis-preds \
+--iou-analysis
+# --n-clicks 100
