@@ -41,7 +41,7 @@ def serialize(init):
     return new_init
 
 
-def load_model(config, **kwargs):
+def load_model(config, eval_ritm, **kwargs):
     model_class = get_class_from_str(config['class'])
     model_default_params = get_default_params(model_class)
 
@@ -59,6 +59,11 @@ def load_model(config, **kwargs):
             continue
         model_args[pname] = value
     model_args.update(kwargs)
+
+    # This ugly hardcode is only to support evalution for RITM models
+    # Ignore it if you are evaluting SimpleClick models.
+    if eval_ritm:
+        model_args['use_rgb_conv'] = True
 
     return model_class(**model_args)
 

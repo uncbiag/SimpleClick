@@ -60,6 +60,7 @@ def parse_args():
     parser.add_argument('--eval-mode', type=str, default='cvpr',
                         help="Possible choices: cvpr, fixed<number>, or fixed<number>,<number>,(e.g. fixed400, fixed400,600).")
 
+    parser.add_argument('--eval-ritm', action='store_true', default=False)
     parser.add_argument('--save-ious', action='store_true', default=False)
     parser.add_argument('--print-ious', action='store_true', default=False)
     parser.add_argument('--vis-preds', action='store_true', default=False)
@@ -106,11 +107,13 @@ def main():
         dataset = utils.get_dataset(dataset_name, cfg)
 
         for checkpoint_path in checkpoints_list:
-            model = utils.load_is_model(checkpoint_path, args.device)
+            model = utils.load_is_model(checkpoint_path, args.device, args.eval_ritm)
 
-            predictor_params, zoomin_params = get_predictor_and_zoomin_params(args, dataset_name)
+            predictor_params, zoomin_params = get_predictor_and_zoomin_params(args, dataset_name, eval_ritm=args.eval_ritm)
 
-            interpolate_pos_embed_inference(model.backbone, zoomin_params['target_size'], args.device)
+            # For SimpleClick models, we usually need to interpolate the positional embedding
+            if not args.eval_ritm:
+                interpolate_pos_embed_inference(model.backbone, zoomin_params['target_size'], args.device)
 
             predictor = get_predictor(model, args.mode, args.device,
                                       prob_thresh=args.thresh,
@@ -137,7 +140,7 @@ def main():
             print_header = False
 
 
-def get_predictor_and_zoomin_params(args, dataset_name, apply_zoom_in=True):
+def get_predictor_and_zoomin_params(args, dataset_name, apply_zoom_in=True, eval_ritm=False):
     predictor_params = {}
 
     if args.clicks_limit is not None:
@@ -146,7 +149,21 @@ def get_predictor_and_zoomin_params(args, dataset_name, apply_zoom_in=True):
         predictor_params['net_clicks_limit'] = args.clicks_limit
 
     zoom_in_params = None
-    if apply_zoom_in:
+    if apply_zoom_in and eval_ritm:
+        if args.eval_mode == 'cvpr':
+            zoom_in_params = {
+                'target_size': 600 if dataset_name == 'DAVIS' else 400
+            }
+        elif args.eval_mode.startswith('fixed'):
+            crop_size = int(args.eval_mode[5:])
+            zoom_in_params = {
+                'skip_clicks': -1,
+                'target_size': (crop_size, crop_size)
+            }
+        else:
+            raise NotImplementedError
+
+    if apply_zoom_in and not eval_ritm:
         if args.eval_mode == 'cvpr':
             zoom_in_params = {
                 'skip_clicks': -1,
