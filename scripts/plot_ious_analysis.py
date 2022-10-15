@@ -65,9 +65,30 @@ model_name_mapper = {'sbd_vitb_epoch_54_NoBRS': 'Ours-ViT-B (SBD)',
                      'sbd_vith_epoch_54_NoBRS': 'Ours-ViT-H (SBD)',
                      'cocolvis_vitb_epoch_54_NoBRS': 'Ours-ViT-B (C+L)',
                      'cocolvis_vitl_epoch_54_NoBRS': 'Ours-ViT-L (C+L)',
+                     'cocolvis_vith_epoch_52_NoBRS': 'Ours-ViT-H (C+L)',
                      '052_NoBRS': 'Ours-ViT-H (C+L)',
                      'sbd_h18_itermask_NoBRS': 'RITM-HRNet18 (SBD)',
-                     'coco_lvis_h32_itermask_NoBRS': 'RITM-HRNet32 (C+L)'}
+                     'coco_lvis_h32_itermask_NoBRS': 'RITM-HRNet32 (C+L)',
+                     'cocolvis_segformer_b3_s2_FocalClick': 'FocalClick-SegF-B3 (C+L)',
+                     'cocolvis_segformer_b0_s2_FocalClick': 'FocalClick-SegF-B0 (C+L)'
+}
+
+color_style_mapper = {'Ours-ViT-B (SBD)': ('#0000ff',   '-'),
+                      'Ours-ViT-L (SBD)': ('#008000',   '-'),
+                      'Ours-ViT-H (SBD)': ('#ff0000',   '-'),
+                      'Ours-ViT-B (C+L)': ('#0080ff',   '-'),
+                      'Ours-ViT-L (C+L)': ('#8000ff',   '-'),
+                      'Ours-ViT-H (C+L)': ('#ff8000',   '-'),
+                      'RITM-HRNet18 (SBD)': ('#000000',   ':'),
+                      'RITM-HRNet32 (C+L)': ('#444444',   ':'),
+                      'FocalClick-SegF-B0 (C+L)': ('#888888',   ':'),
+                      'FocalClick-SegF-B3 (C+L)': ('#888888',   ':'),
+                     }
+
+range_mapper = {'SBD': (65, 96, 3),
+                 'DAVIS': (66, 97, 3),
+                 'Pascal': (66, 100, 3)
+               }
 
 def main():
     args, cfg = parse_args()
@@ -101,13 +122,24 @@ def main():
             miou_str = ' '.join([f'mIoU@{click_id}={model_results[click_id-1]:.2%};'
                                  for click_id in [1, 3, 5, 10, 20] if click_id <= len(model_results)])
             print(f'{model_name} on {dataset_name}:\n{miou_str}\n')
-            plt.plot(1 + np.arange(n_clicks), model_results, linewidth=2, 
-                label=model_name_mapper[model_name] if model_name in model_name_mapper else model_name)
+
+            label = model_name_mapper[model_name] if model_name in model_name_mapper else model_name
+
+            color, style = None, None
+            if label in color_style_mapper:
+                color, style = color_style_mapper[label]
+
+            plt.plot(1 + np.arange(n_clicks), model_results, linewidth=2, label=label, linestyle=style)
+
+        if dataset_name == 'PascalVOC':
+            dataset_name = 'Pascal' 
 
         plt.title(f'{dataset_name}', fontsize=22)
         plt.grid()
         plt.legend(loc=4, fontsize='xx-large')
-        plt.yticks(np.arange(80+0*min_val, 102 + 0*max_val, step=2), fontsize='xx-large')
+
+        min_val, max_val, step = range_mapper[dataset_name]
+        plt.yticks(np.arange(min_val, max_val, step=step), fontsize='xx-large')
         plt.xticks(1 + np.arange(max_clicks), fontsize='xx-large')
         plt.xlabel('Number of Clicks', fontsize='xx-large')
         plt.ylabel('mIoU score (%)', fontsize='xx-large')
