@@ -70,7 +70,9 @@ model_name_mapper = {'sbd_vitb_epoch_54_NoBRS': 'Ours-ViT-B (SBD)',
                      'sbd_h18_itermask_NoBRS': 'RITM-HRNet18 (SBD)',
                      'coco_lvis_h32_itermask_NoBRS': 'RITM-HRNet32 (C+L)',
                      'cocolvis_segformer_b3_s2_FocalClick': 'FocalClick-SegF-B3 (C+L)',
-                     'cocolvis_segformer_b0_s2_FocalClick': 'FocalClick-SegF-B0 (C+L)'
+                     'cocolvis_segformer_b0_s2_FocalClick': 'FocalClick-SegF-B0 (C+L)',
+                     'sbd_cdnet_resnet34_CDNet': 'CDNet-ResNet-34 (SBD)',
+                     'cocolvis_cdnet_resnet34_CDNet': 'CDNet-ResNet-34 (C+L)'
 }
 
 color_style_mapper = {'Ours-ViT-B (SBD)': ('#0000ff',   '-'),
@@ -83,11 +85,19 @@ color_style_mapper = {'Ours-ViT-B (SBD)': ('#0000ff',   '-'),
                       'RITM-HRNet32 (C+L)': ('#444444',   ':'),
                       'FocalClick-SegF-B0 (C+L)': ('#888888',   ':'),
                       'FocalClick-SegF-B3 (C+L)': ('#888888',   ':'),
+                      'CDNet-ResNet-34 (SBD)': ('', ':'),
+                      'CDNet-ResNet-34 (C+L)': ('', ':')
                      }
 
 range_mapper = {'SBD': (65, 96, 3),
                  'DAVIS': (66, 97, 3),
-                 'Pascal': (66, 100, 3)
+                 'Pascal VOC': (66, 100, 3),
+                 'COCO_MVal': (60, 97, 3),
+                 'BraTS': (10, 100, 10),
+                 'OAIZIB': (0,85, 10),
+                 'ssTEM': (5, 100, 10),
+                 'GrabCut': (80, 100, 2),
+                 'Berkeley': (80, 100, 2)
                }
 
 def main():
@@ -132,11 +142,11 @@ def main():
             plt.plot(1 + np.arange(n_clicks), model_results, linewidth=2, label=label, linestyle=style)
 
         if dataset_name == 'PascalVOC':
-            dataset_name = 'Pascal' 
+            dataset_name = 'Pascal VOC' 
 
         plt.title(f'{dataset_name}', fontsize=22)
         plt.grid()
-        plt.legend(loc=4, fontsize='xx-large')
+        plt.legend(loc=4, fontsize='x-large')
 
         min_val, max_val, step = range_mapper[dataset_name]
         plt.yticks(np.arange(min_val, max_val, step=step), fontsize='xx-large')
