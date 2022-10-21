@@ -1,12 +1,7 @@
 ## [SimpleClick: Interactive Image Segmentation with Simple Vision Transformers](https://arxiv.org/abs/2210.11006)
-<p align="center">
-    <a href="https://arxiv.org/pdf/2210.11006.pdf">
-        <img src="https://img.shields.io/badge/arXiv-2102.06583-b31b1b"/>
-    </a>
-    <a href="https://opensource.org/licenses/MIT">
-        <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="The MIT License"/>
-    </a>
-</p>
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/simpleclick-interactive-image-segmentation/interactive-segmentation-on-sbd)](https://paperswithcode.com/sota/interactive-segmentation-on-sbd?p=simpleclick-interactive-image-segmentation)
+[![PWC](https://img.shields.io/badge/arXiv-2102.06583-b31b1b)](https://arxiv.org/pdf/2210.11006.pdf)
+[![PWC](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <p align="center">
   <img src="./assets/img/simpleclick_framework.png" alt="drawing", width="650"/>
