@@ -1,6 +1,6 @@
 # Run demo for SimpleClick models
 model_folder=./weights/simpleclick_models
-model_name=cocolvis_vitl_epoch_54.pth
+model_name=cocolvis_vit_huge.pth
 
 python3 demo.py \
 --checkpoint=${model_folder}/${model_name} \
