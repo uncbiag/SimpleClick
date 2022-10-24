@@ -22,8 +22,14 @@
 ## Demo
 <p align="center">
   <img src="./assets/demo_sheep.gif" alt="drawing", width="500"/>
-  <p align="center"> Model: cocolvis_vit_huge.pth </p>
 </p>
+
+``
+python3 demo.py 
+--checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth
+--gpu 0
+``
+
 
 ## Download 
 Pre-trained SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
