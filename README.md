@@ -24,11 +24,11 @@
   <img src="./assets/demo_sheep.gif" alt="drawing", width="500"/>
 </p>
 
-``
+```
 python3 demo.py 
 --checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth
 --gpu 0
-``
+```
 
 
 ## Download 
@@ -45,3 +45,13 @@ Other datasets: [RITM Github](https://github.com/saic-vul/ritm_interactive_segme
 
 ## License
 The code is released under the MIT License. It is a short, permissive software license. Basically, you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source. 
+
+## Citation
+```
+@article{liu2022simpleclick,
+  title={SimpleClick: Interactive Image Segmentation with Simple Vision Transformers},
+  author={Liu, Qin and Xu, Zhenlin and Bertasius, Gedas and Niethammer, Marc},
+  journal={arXiv preprint arXiv:2210.11006},
+  year={2022}
+}
+```
