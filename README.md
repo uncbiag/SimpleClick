@@ -47,7 +47,7 @@ Other datasets: [RITM Github](https://github.com/saic-vul/ritm_interactive_segme
 The code is released under the MIT License. It is a short, permissive software license. Basically, you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source. 
 
 ## Citation
-```
+```bibtex
 @article{liu2022simpleclick,
   title={SimpleClick: Interactive Image Segmentation with Simple Vision Transformers},
   author={Liu, Qin and Xu, Zhenlin and Bertasius, Gedas and Niethammer, Marc},
@@ -55,3 +55,5 @@ The code is released under the MIT License. It is a short, permissive software l
   year={2022}
 }
 ```
+## Acknowledgement
+Our project is developed based on [RITM](https://github.com/saic-vul/ritm_interactive_segmentation). Thanks for the nice demo GUI :)
