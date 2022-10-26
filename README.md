@@ -19,9 +19,7 @@
 </p>
 
 ## Environment
-Training and evaluation environment: Python3.8.8, PyTorch 1.11.0, Ubuntu 20.4, CUDA driver 11.0
-
-The models are trained and evaluated using Python 3.8.8, PyTorch 1.11.0, Ubuntu 20.4. Run the following command to install required packages.
+Training and evaluation environment: Python3.8.8, PyTorch 1.11.0, Ubuntu 20.4, CUDA driver 11.0. Run the following command to install required packages.
 ```
 pip3 install -r requirements.txt
 ```
