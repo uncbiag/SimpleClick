@@ -19,21 +19,21 @@
 </p>
 
 ## Environment
-The models are trained and evaluated using Python 3.8.8 and PyTorch 1.11.0.
-But we find the evaluation results can be reproduced with the docker using Python 3.6.9 and PyTorch 1.9.0.
+The models are trained and evaluated using Python 3.8.8 and PyTorch 1.11.0. But we find the evaluation results can be reproduced with the docker using Python 3.6.9 and PyTorch 1.9.0. Run the following command to install required packages.
 ```
 pip3 install -r requirements.txt
 ```
+You can build a container with the configured environment using our [Dockerfile](https://github.com/uncbiag/SimpleClick/tree/main/docker).
+You need to configue the paths to the datasets in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml) before training or testing.
 
 ## Demo
 <p align="center">
   <img src="./assets/demo_sheep.gif" alt="drawing", width="500"/>
 </p>
 
+An example script to run the demo. Some test images can be find [here](https://github.com/uncbiag/SimpleClick/tree/main/assets/test_imgs).
 ```
-python3 demo.py 
---checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth
---gpu 0
+python3 demo.py --checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth --gpu 0
 ```
 
 
@@ -47,6 +47,7 @@ OAI-ZIB dataset (150 cases): [Google Drive](https://drive.google.com/drive/folde
 Other datasets: [RITM Github](https://github.com/saic-vul/ritm_interactive_segmentation)
 
 ## Notes
+[10/25/2022] Add docker files.
 [10/02/2022] Release the main models. This repository is still under active development.
 
 ## License
