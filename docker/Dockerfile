@@ -1,5 +1,4 @@
-FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
-
+FROM nvidia/cuda:11.0.3-cudnn8-devel-ubuntu18.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -8,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	    curl \
         libglib2.0-0 \
         software-properties-common \
-        python3.6-dev \
+        python3-dev \
         python3-pip \
         python3-tk \
         firefox \
@@ -18,16 +17,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /tmp
 
 RUN pip3 install --upgrade pip
-RUN pip3 install setuptools
-RUN pip3 install matplotlib numpy pandas scipy tqdm pyyaml easydict scikit-image bridson Pillow ninja
-RUN pip3 install imgaug mxboard graphviz
-RUN pip3 install albumentations --no-deps
-RUN pip3 install opencv-python-headless
-RUN pip3 install Cython
-RUN pip3 install torch
-RUN pip3 install torchvision
-RUN pip3 install scikit-learn
-RUN pip3 install tensorboard
+RUN pip3 install matplotlib==3.3.4
+RUN pip3 install torch==1.9.0
+RUN pip3 install torchvision==0.10.0
+RUN pip3 install setuptools==52.0.0
+RUN pip3 install albumentations==0.5.2
+RUN pip3 install PyYAML==6.0
+RUN pip3 install easydict==1.9
+RUN pip3 install tensorboard==2.8.0
+RUN pip3 install opencv-python-headless==4.5.3.56
+RUN pip3 install albumentations==0.5.2
+RUN pip3 install mmcv==1.6.2
+RUN pip3 install timm==0.6.11
+RUN pip3 install Cython==0.29.32
 
 RUN mkdir /work
 WORKDIR /work

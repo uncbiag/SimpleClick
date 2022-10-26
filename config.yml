@@ -1,24 +1,24 @@
 INTERACTIVE_MODELS_PATH: "./weights"
-EXPS_PATH: "/playpen-raid2/qinliu/models/model_1005_2022"
+EXPS_PATH: "/work/models/model_1014_2022"
 
 # Evaluation datasets
-GRABCUT_PATH: "/playpen-raid2/qinliu/data/GrabCut"
-BERKELEY_PATH: "/playpen-raid/qinliu/data/Berkeley"
-DAVIS_PATH: "/playpen-raid/qinliu/data/DAVIS"
-COCO_MVAL_PATH: "/playpen-raid/qinliu/data/COCO_MVal"
-BraTS_PATH: "/playpen-raid/qinliu/data/BraTS20"
-ssTEM_PATH: "/playpen-raid/qinliu/data/ssTEM"
-OAIZIB_PATH: "/playpen-raid2/qinliu/data/OAI-ZIB"
-OAI_PATH: "/playpen-raid2/qinliu/data/OAI"
-HARD_PATH: "/playpen-raid2/qinliu/data/HARD"
+GRABCUT_PATH: "/work/data/GrabCut"
+BERKELEY_PATH: "/work/data/Berkeley"
+DAVIS_PATH: "/work/data/DAVIS"
+COCO_MVAL_PATH: "/work/data/COCO_MVal"
+BraTS_PATH: "/work/data/BraTS20"
+ssTEM_PATH: "/work/data/ssTEM"
+OAIZIB_PATH: "/work/data/OAI-ZIB"
+OAI_PATH: "/work/data/OAI"
+HARD_PATH: "/work/data/HARD"
 
 # Train datasets
-SBD_PATH: "/playpen-raid/qinliu/data/SBD/dataset"
-COCO_PATH: "/playpen-raid/qinliu/data/COCO_2017"
-LVIS_v1_PATH: "/playpen-raid/qinliu/data/COCO_2017"
-OPENIMAGES_PATH: "./datasets/OpenImages"
-PASCALVOC_PATH: "/playpen-raid/qinliu/data/PascalVOC"
-ADE20K_PATH: "./datasets/ADE20K"
+SBD_PATH: "/work/data/SBD/dataset"
+COCO_PATH: "/work/data/COCO_2017"
+LVIS_v1_PATH: "/work/data/COCO_2017"
+OPENIMAGES_PATH: "/work/data/OpenImages"
+PASCALVOC_PATH: "/work/data/PascalVOC"
+ADE20K_PATH: "/work/data/ADE20K"
 
 # You can download the weights for HRNet from the repository:
 # https://github.com/HRNet/HRNet-Image-Classification
