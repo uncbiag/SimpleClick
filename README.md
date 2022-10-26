@@ -31,11 +31,11 @@ You need to configue the paths to the datasets in [config.yml](https://github.co
   <img src="./assets/demo_sheep.gif" alt="drawing", width="500"/>
 </p>
 
-An example script to run the demo. Some test images can be find [here](https://github.com/uncbiag/SimpleClick/tree/main/assets/test_imgs).
+An example script to run the demo. 
 ```
 python3 demo.py --checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth --gpu 0
 ```
-
+Some test images can be find [here](https://github.com/uncbiag/SimpleClick/tree/main/assets/test_imgs).
 
 ## Download 
 Pre-trained SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
