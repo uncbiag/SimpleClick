@@ -18,6 +18,12 @@
     </a>    
 </p>
 
+## Environment
+The models are trained and evaluated using Python 3.8.8 and PyTorch 1.11.0.
+But we find the evaluation results can be reproduced with the docker using Python 3.6.9 and PyTorch 1.9.0.
+```
+pip3 install -r requirements.txt
+```
 
 ## Demo
 <p align="center">
