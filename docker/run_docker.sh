@@ -5,4 +5,4 @@ docker run -e DISPLAY=$DISPLAY \
            --gpus all \
            -v /playpen-raid2/qinliu/data:/work/data \
            -v /playpen-raid2/qinliu/projects:/work/projects \
-           --net host --rm -it simpleclick bash
+           --net host --rm -it simpleclick:latest bash

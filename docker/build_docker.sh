@@ -1,1 +1,1 @@
-docker build -t simpleclick .
+docker build -t simpleclick:latest .
