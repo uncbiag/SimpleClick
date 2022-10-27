@@ -24,7 +24,7 @@ Training and evaluation environment: Python3.8.8, PyTorch 1.11.0, Ubuntu 20.4, C
 pip3 install -r requirements.txt
 ```
 You can build a container with the configured environment using our [Dockerfiles](https://github.com/uncbiag/SimpleClick/tree/main/docker). 
-We only provide the Dockerfiles for CUDA 11.0/11.4/11.6. If you use different drivers, you need to modify the base image in the Dockerfile.
+The Dockerfiles only support CUDA 11.0/11.4/11.6. If you use different CUDA drivers, you need to modify the base image in the Dockerfile. (This is annoying that you need a matched image in Dockerfile for your CUDA driver, otherwise the gpu doesn't work in the container. Any better solutions?)
 You also need to configue the paths to the datasets in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml) before training or testing.
 
 ## Demo
