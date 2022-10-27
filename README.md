@@ -19,13 +19,13 @@
 </p>
 
 ## Environment
-Training and evaluation environment: Python3.8.8, PyTorch 1.11.0, Ubuntu 20.4, CUDA driver 11.0. Run the following command to install required packages.
+Training and evaluation environment: Python3.8.8, PyTorch 1.11.0, Ubuntu 20.4, CUDA 11.0. Run the following command to install required packages.
 ```
 pip3 install -r requirements.txt
 ```
 You can build a container with the configured environment using our [Dockerfiles](https://github.com/uncbiag/SimpleClick/tree/main/docker). 
-You need to build the docker image based on your cuda driver version, otherwise it may be unable to use the gpus.
-You need to configue the paths to the datasets in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml) before training or testing.
+We only provide the Dockerfiles for CUDA 11.0/11.4/11.6. If you use different drivers, you need to modify the base image in the Dockerfile.
+You also need to configue the paths to the datasets in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml) before training or testing.
 
 ## Demo
 <p align="center">
