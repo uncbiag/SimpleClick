@@ -38,6 +38,26 @@ python3 demo.py --checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth 
 ```
 Some test images can be find [here](https://github.com/uncbiag/SimpleClick/tree/main/assets/test_imgs).
 
+## Evaluation
+Before evaluation, the dataset path should be configured in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml).
+```
+MODEL_PATH=./weights/simpleclick_models/cocolvis_vit_huge.pth
+python scripts/evaluate_model.py NoBRS \
+--gpu=0 \
+--checkpoint=${MODEL_PATH} \
+--eval-mode=cvpr \
+--datasets=GrabCut,Berkeley,DAVIS,PascalVOC,SBD,COCO_MVal,ssTEM,BraTS,OAIZIB
+```
+
+## Training
+Before training, please download the [MAE](https://github.com/facebookresearch/mae) pretrained weights (click to download: [ViT-Base](https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_base.pth), [ViT-Large](https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_large.pth), [ViT-Huge](https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_huge.pth)) and configure the dowloaded path in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml).
+Use the following code to train a huge model: 
+```
+python train.py models/iter_mask/plainvit_huge448_cocolvis_itermask.py \
+--batch-size=32 \
+--ngpus=4
+```
+
 ## Download 
 Pre-trained SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
 
