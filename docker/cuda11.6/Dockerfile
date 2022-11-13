@@ -29,8 +29,9 @@ RUN pip3 install opencv-python-headless==4.5.3.56
 RUN pip3 install albumentations==0.5.2
 RUN pip3 install mmcv==1.6.2
 RUN pip3 install timm==0.6.11
-RUN pip3 install Cython==0.29.32
-RUN pip3 install protobuf==3.6.1
+RUN pip3 install Cython==0.29.32 
+RUN pip3 install protobuf==3.6.1 
+RUN pip3 install einops==0.6.0
 
 RUN mkdir /work
 WORKDIR /work

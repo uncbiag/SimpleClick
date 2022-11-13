@@ -1,5 +1,5 @@
 INTERACTIVE_MODELS_PATH: "./weights"
-EXPS_PATH: "/work/models/model_1014_2022"
+EXPS_PATH: "/work/models/model_1112_2022"
 
 # Evaluation datasets
 GRABCUT_PATH: "/work/data/GrabCut"
@@ -36,8 +36,8 @@ IMAGENET_PRETRAINED_MODELS:
   MIT_B1: "./weights/pretrained/mit_b1_converted.pth"
   MIT_B0: "./weights/pretrained/mit_b0_converted.pth"
   HRF_BASE: "./weights/pretrained/hrt_base.pth"
-  SWIN_BASE: "/playpen-raid2/qinliu/projects/iSegFormer/weights/pretrained/swin_base_patch4_window12_384_22k.pth"
-  SWIN_LARGE: "/playpen-raid2/qinliu/projects/iSegFormer/weights/pretrained/swin_large_patch4_window12_384_22k.pth"
-  MAE_BASE: "/playpen-raid2/qinliu/projects/microViT/pretrain/mae_pretrain_vit_base.pth"
-  MAE_LARGE: "/playpen-raid2/qinliu/projects/microViT/pretrain/mae_pretrain_vit_large.pth"
-  MAE_HUGE: "/playpen-raid2/qinliu/projects/microViT/pretrain/mae_pretrain_vit_huge.pth"
+  SWIN_BASE: "/work/projects/iSegFormer/weights/pretrained/swin_base_patch4_window12_384_22k.pth"
+  SWIN_LARGE: "/work/projects/iSegFormer/weights/pretrained/swin_large_patch4_window12_384_22k.pth"
+  MAE_BASE: "/work/projects/microViT/pretrain/mae_pretrain_vit_base.pth"
+  MAE_LARGE: "/work/projects/microViT/pretrain/mae_pretrain_vit_large.pth"
+  MAE_HUGE: "/work/projects/microViT/pretrain/mae_pretrain_vit_huge.pth"

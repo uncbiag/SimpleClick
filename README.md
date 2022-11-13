@@ -39,7 +39,7 @@ python3 demo.py --checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth 
 Some test images can be find [here](https://github.com/uncbiag/SimpleClick/tree/main/assets/test_imgs).
 
 ## Download 
-Pre-trained SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
+SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
 
 BraTS dataset (369 cases): [Google Drive](https://drive.google.com/drive/folders/1B6y1nNBnWU09EhxvjaTdp1XGjc1T6wUk?usp=sharing) 
 
