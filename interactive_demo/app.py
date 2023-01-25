@@ -176,7 +176,7 @@ class InteractiveDemoApp(ttk.Frame):
         self.menubar.focus_set()
         if self._check_entry(self):
             filename = filedialog.askopenfilename(parent=self.master, filetypes=[
-                ("Images", "*.jpg *.jpeg *.png *.bmp *.tiff"),
+                ("Images", "*.jpg *.jpeg *.png *.bmp *.tiff *.tif"),
                 ("All files", "*.*"),
             ], title="Chose an image")
 
