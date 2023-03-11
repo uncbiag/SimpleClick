@@ -4,7 +4,7 @@ EXPS_PATH: "/playpen-raid2/qinliu/models/model_0125_2023"
 # Evaluation datasets
 GRABCUT_PATH: "/playpen-raid2/qinliu/data/GrabCut"
 BERKELEY_PATH: "/playpen-raid2/qinliu/data/Berkeley"
-DAVIS_PATH: "/playpen-raid2/qinliu/data/DAVIS"
+DAVIS_PATH: "/playpen-raid2/qinliu/data/DAVIS345"
 COCO_MVAL_PATH: "/playpen-raid2/qinliu/data/COCO_MVal"
 BraTS_PATH: "/playpen-raid2/qinliu/data/BraTS20"
 ssTEM_PATH: "/playpen-raid2/qinliu/data/ssTEM"

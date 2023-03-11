@@ -120,7 +120,7 @@ class VisionTransformer(nn.Module):
         num_patches = self.patch_embed.num_patches
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
-        self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
+        self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim)) # learnable positional embedding
         self.pos_drop = nn.Dropout(p=pos_drop_rate)
 
         norm_layer = norm_layer if norm_layer else partial(nn.LayerNorm, eps=1e-6)
