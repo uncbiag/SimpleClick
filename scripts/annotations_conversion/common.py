@@ -94,7 +94,7 @@ def get_masks_hierarchy(masks, masks_meta):
 
         return None
 
-    used_masks = np.zeros(len(masks), dtype=np.bool)
+    used_masks = np.zeros(len(masks), dtype=bool)
     parents = [None] * len(masks)
     node_level = [0] * len(masks)
     for ti in range(len(masks) - 1):

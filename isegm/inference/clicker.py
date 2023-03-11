@@ -82,7 +82,7 @@ class Clicker(object):
 
     def reset_clicks(self):
         if self.gt_mask is not None:
-            self.not_clicked_map = np.ones_like(self.gt_mask, dtype=np.bool)
+            self.not_clicked_map = np.ones_like(self.gt_mask, dtype=bool)
 
         self.num_pos_clicks = 0
         self.num_neg_clicks = 0

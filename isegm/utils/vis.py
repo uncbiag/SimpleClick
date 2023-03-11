@@ -93,7 +93,7 @@ def blend_mask(image, mask, alpha=0.6):
 
 
 def get_boundaries(instances_masks, boundaries_width=1):
-    boundaries = np.zeros((instances_masks.shape[0], instances_masks.shape[1]), dtype=np.bool)
+    boundaries = np.zeros((instances_masks.shape[0], instances_masks.shape[1]), dtype=bool)
 
     for obj_id in np.unique(instances_masks.flatten()):
         if obj_id == 0:
@@ -101,7 +101,7 @@ def get_boundaries(instances_masks, boundaries_width=1):
 
         obj_mask = instances_masks == obj_id
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        inner_mask = cv2.erode(obj_mask.astype(np.uint8), kernel, iterations=boundaries_width).astype(np.bool)
+        inner_mask = cv2.erode(obj_mask.astype(np.uint8), kernel, iterations=boundaries_width).astype(bool)
 
         obj_boundary = np.logical_xor(obj_mask, np.logical_and(inner_mask, obj_mask))
         boundaries = np.logical_or(boundaries, obj_boundary)
