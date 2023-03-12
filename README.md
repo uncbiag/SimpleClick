@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="./assets/simpleclick_framework.pdf" alt="drawing", width="650"/>
+  <img src="./assets/simpleclick_framework.png" alt="drawing", width="650"/>
 </p>
 
 <p align="center">
