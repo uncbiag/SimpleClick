@@ -8,7 +8,7 @@ DAVIS_PATH: "/playpen-raid2/qinliu/data/DAVIS345"
 COCO_MVAL_PATH: "/playpen-raid2/qinliu/data/COCO_MVal"
 BraTS_PATH: "/playpen-raid2/qinliu/data/BraTS20"
 ssTEM_PATH: "/playpen-raid2/qinliu/data/ssTEM"
-OAIZIB_PATH: "/playpen-raid2/qinliu/data/OAI-ZIB"
+OAIZIB_PATH: "/playpen-raid2/qinliu/data/OAI-ZIB/iseg_slices"
 OAI_PATH: "/playpen-raid2/qinliu/data/OAI"
 HARD_PATH: "/playpen-raid2/qinliu/data/HARD"
 
