@@ -7,9 +7,11 @@ from albumentations import ReplayCompose
 
 class DSample:
     def __init__(self, image, encoded_masks, objects=None,
-                 objects_ids=None, ignore_ids=None, sample_id=None):
+                 objects_ids=None, ignore_ids=None, sample_id=None, 
+                 objects_category_names=None):
         self.image = image
         self.sample_id = sample_id
+        self.objects_category_names = objects_category_names
 
         if len(encoded_masks.shape) == 2:
             encoded_masks = encoded_masks[:, :, np.newaxis]
@@ -101,10 +103,11 @@ class DSample:
     def objects_ids(self):
         return list(self._objects.keys())
 
-    # @property
     def gt_mask(self, object_id=0):
-        # assert len(self._objects) == 1
         return self.get_object_mask(self.objects_ids[object_id])
+
+    def category_name(self, object_id=0):
+        return self.objects_category_names[object_id]
 
     @property
     def root_objects(self):
