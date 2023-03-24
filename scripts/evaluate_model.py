@@ -60,7 +60,6 @@ def parse_args():
     parser.add_argument('--eval-mode', type=str, default='cvpr',
                         help="Possible choices: cvpr, fixed<number>, or fixed<number>,<number>,(e.g. fixed400, fixed400,600).")
 
-    parser.add_argument('--eval-ritm', action='store_true', default=False)
     parser.add_argument('--save-ious', action='store_true', default=False)
     parser.add_argument('--print-ious', action='store_true', default=False)
     parser.add_argument('--vis-preds', action='store_true', default=False)
@@ -111,9 +110,7 @@ def main():
 
             predictor_params, zoomin_params = get_predictor_and_zoomin_params(args, dataset_name, eval_ritm=args.eval_ritm)
 
-            # For SimpleClick models, we usually need to interpolate the positional embedding
-            if not args.eval_ritm:
-                interpolate_pos_embed_inference(model.backbone, zoomin_params['target_size'], args.device)
+            interpolate_pos_embed_inference(model.backbone, zoomin_params['target_size'], args.device)
 
             predictor = get_predictor(model, args.mode, args.device,
                                       prob_thresh=args.thresh,
@@ -139,7 +136,7 @@ def main():
                          print_header=print_header)
             print_header = False
 
-    # # uncomment the following lines for memory analysis
+    # # uncomment the following lines for GPU memory analysis
     # print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
     # print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
     # print("torch.cuda.max_memory_reserved: %fGB"%(torch.cuda.max_memory_reserved(0)/1024/1024/1024))
