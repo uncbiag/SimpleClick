@@ -30,7 +30,7 @@ class ADE20kDataset(ISDataset):
     """ The object ids range from 1 to 150.
     """
     def __init__(self, dataset_path, images_dir_name='images', masks_dir_name='annotations',
-                 split='train', stuff_prob=0.0, **kwargs):
+                 split='train', **kwargs):
         super().__init__(**kwargs)
         assert split in {'train', 'val'}
 

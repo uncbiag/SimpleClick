@@ -33,7 +33,7 @@ def parse_args():
                                    help='The relative path to the experiment with checkpoints.'
                                         '(relative to cfg.EXPS_PATH)')
 
-    parser.add_argument('--datasets', type=str, default='GrabCut,Berkeley,DAVIS,PascalVOC,SBD,BraTS,ssTEM,OAIZIB,COCO_MVal',
+    parser.add_argument('--datasets', type=str, default='GrabCut,Berkeley,DAVIS,PascalVOC,SBD,BraTS,ssTEM,OAIZIB,COCO_MVal,ADE20K',
                         help='List of datasets on which the model should be tested. '
                              'Datasets are separated by a comma. Possible choices: '
                              'GrabCut, Berkeley, DAVIS, SBD, PascalVOC')

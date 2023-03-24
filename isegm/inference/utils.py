@@ -4,7 +4,8 @@ import torch
 import numpy as np
 
 from isegm.data.datasets import GrabCutDataset, BerkeleyDataset, DavisDataset, \
-    SBDEvaluationDataset, PascalVocDataset, BraTSDataset, ssTEMDataset, OAIZIBDataset, HARDDataset
+    SBDEvaluationDataset, PascalVocDataset, BraTSDataset, ssTEMDataset, OAIZIBDataset, \
+    HARDDataset, ADE20kDataset
 from isegm.utils.serialization import load_model
 
 
@@ -69,6 +70,8 @@ def get_dataset(dataset_name, cfg):
         dataset = OAIZIBDataset(cfg.OAIZIB_PATH)
     elif dataset_name == 'HARD':
         dataset = HARDDataset(cfg.HARD_PATH)
+    elif dataset_name == 'ADE20K':
+        dataset = ADE20kDataset(cfg.ADE20K_PATH, split='val')
     else:
         dataset = None
 
