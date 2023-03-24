@@ -71,9 +71,6 @@ def parse_args():
     parser.add_argument('--layerwise-decay', action='store_true', 
                         help='layer wise decay for transformer blocks.')
 
-    parser.add_argument('--random-split', action='store_true', 
-                        help='random split the patch instead of window split.')
-
     return parser.parse_args()
 
 

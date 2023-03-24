@@ -2,12 +2,13 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from isegm.model.ops import DistMaps, BatchImageNormalize, ScaleLayer
+from isegm.model.ops import DistMaps, BatchImageNormalize
 
 
 class ISModel(nn.Module):
-    def __init__(self, with_aux_output=False, norm_radius=5, use_disks=False, cpu_dist_maps=False,
-                 with_prev_mask=False, norm_mean_std=([.485, .456, .406], [.229, .224, .225])):
+    def __init__(self, with_aux_output=False, norm_radius=5, use_disks=False, 
+                 cpu_dist_maps=False, with_prev_mask=False, 
+                 norm_mean_std=([.485, .456, .406], [.229, .224, .225])):
         super().__init__()
 
         self.with_aux_output = with_aux_output
@@ -18,19 +19,32 @@ class ISModel(nn.Module):
         if self.with_prev_mask:
             self.coord_feature_ch += 1
 
-        self.dist_maps = DistMaps(norm_radius=norm_radius, spatial_scale=1.0,
-                                  cpu_mode=cpu_dist_maps, use_disks=use_disks)
+        self.dist_maps = DistMaps(
+            norm_radius=norm_radius, 
+            spatial_scale=1.0,
+            cpu_mode=cpu_dist_maps, 
+            use_disks=use_disks
+        )
 
     def forward(self, image, points):
         image, prev_mask = self.prepare_input(image)
         coord_features = self.get_coord_features(image, prev_mask, points)
         outputs = self.backbone_forward(image, coord_features)
 
-        outputs['instances'] = nn.functional.interpolate(outputs['instances'], size=image.size()[2:],
-                                                         mode='bilinear', align_corners=True)
+        outputs['instances'] = nn.functional.interpolate(
+            outputs['instances'], 
+            size=image.size()[2:], 
+            mode='bilinear', 
+            align_corners=True
+        )
+
         if self.with_aux_output:
-            outputs['instances_aux'] = nn.functional.interpolate(outputs['instances_aux'], size=image.size()[2:],
-                                                             mode='bilinear', align_corners=True)
+            outputs['instances_aux'] = nn.functional.interpolate(
+                outputs['instances_aux'], 
+                size=image.size()[2:],
+                mode='bilinear', 
+                align_corners=True
+            )
 
         return outputs
 
@@ -43,7 +57,7 @@ class ISModel(nn.Module):
         image = self.normalization(image)
         return image, prev_mask
 
-    def backbone_forward(self, image, coord_features=None):
+    def backbone_forward(self, image, coord_features):
         raise NotImplementedError
 
     def get_coord_features(self, image, prev_mask, points):

@@ -37,8 +37,7 @@ def init_model(cfg):
         num_classes=1,
         loss_decode=CrossEntropyLoss(),
         align_corners=False,
-        upsample=cfg.upsample,
-        channels={'x1':256, 'x2': 128, 'x4': 64}[cfg.upsample]
+        channels=256
     )
 
     model = PlainVitModel(
@@ -48,7 +47,6 @@ def init_model(cfg):
         backbone_params=backbone_params,
         neck_params=neck_params,
         head_params=head_params,
-        random_split=cfg.random_split,
     )
 
     model.backbone.init_weights_from_pretrained(cfg.IMAGENET_PRETRAINED_MODELS.MAE_BASE)
