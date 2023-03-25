@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="./assets/simpleclick_framework.pdf" alt="drawing", width="650"/>
+  <img src="./assets/simpleclick_framework.png" alt="drawing", width="650"/>
 </p>
 
 <p align="center">
@@ -70,6 +70,8 @@ OAI-ZIB dataset (150 cases): [Google Drive](https://drive.google.com/drive/folde
 Other datasets: [RITM Github](https://github.com/saic-vul/ritm_interactive_segmentation)
 
 ## Notes
+[03/11/2023] Add an xTiny model.
+
 [10/25/2022] Add docker files.
 
 [10/02/2022] Release the main models. This repository is still under active development.
