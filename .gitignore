@@ -1,3 +1,7 @@
+# Frequently updated files
+*.sh
+*.ipynb
+
 # Models
 weights/
 results/
