@@ -1,7 +1,6 @@
 from isegm.utils.exp_imports.default import *
-from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
 
-MODEL_NAME = 'sbd_vit_huge448'
+MODEL_NAME = 'sbd_plainvit_huge448'
 
 
 def main(cfg):
@@ -20,6 +19,7 @@ def init_model(cfg):
         in_chans=3,
         embed_dim=1280,
         depth=32,
+        global_atten_freq=2,  # set to 1 to perform global attention for all blocks
         num_heads=16,
         mlp_ratio=4, 
         qkv_bias=True,
@@ -32,12 +32,10 @@ def init_model(cfg):
 
     head_params = dict(
         in_channels=[240, 480, 960, 1920],
-        in_index=[0, 1, 2, 3],
+        in_select_index=[0, 1, 2, 3],
         dropout_ratio=0.1,
         num_classes=1,
-        loss_decode=CrossEntropyLoss(),
-        align_corners=False,
-        channels=256
+        out_channels=256
     )
 
     model = PlainVitModel(

@@ -19,6 +19,7 @@ def init_model(cfg):
         in_chans=3,
         embed_dim=768,
         depth=12,
+        global_atten_freq=1, # set to 1 to perform global attention for all blocks
         num_heads=12,
         mlp_ratio=4, 
         qkv_bias=True,

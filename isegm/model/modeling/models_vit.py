@@ -109,10 +109,11 @@ class VisionTransformer(nn.Module):
     """ Vision Transformer with support for global average pooling 
     """    
     def __init__(self, img_size=(224,224), patch_size=(16, 16), in_chans=3, 
-                 embed_dim=768, depth=12, num_heads=12, mlp_ratio=4., qkv_bias=True,
+                 embed_dim=768, depth=12, global_atten_freq=1, num_heads=12, mlp_ratio=4., qkv_bias=True,
                  pos_drop_rate=0., attn_drop_rate=0., proj_drop_rate=0., 
                  norm_layer=None, act_layer=None):
         super().__init__()
+        self.global_atten_freq = global_atten_freq
         self.embed_dim = embed_dim
 
         self.patch_embed = PatchEmbed(img_size=img_size, patch_size=patch_size, 
@@ -222,7 +223,7 @@ class VisionTransformer(nn.Module):
 
         return x
 
-    def forward(self, x, other_feats=None, global_atten_freq=1, keep_shape=False):
+    def forward(self, x, other_feats=None, keep_shape=False):
         B, C, H, W = x.shape
 
         x = self.patch_embed(x)
@@ -231,7 +232,7 @@ class VisionTransformer(nn.Module):
         x = self.pos_drop(x + self.pos_embed[:, 1:])
 
         num_blocks = len(self.blocks)
-        if global_atten_freq <= 1:
+        if self.global_atten_freq <= 1:
             # perform global attention for all blocks
             for i in range(num_blocks):
                 x = self.blocks[i](x)
@@ -239,7 +240,7 @@ class VisionTransformer(nn.Module):
             # perform global attention sparsely with window attention
             is_window_splitted = False
             for i in range(1, num_blocks + 1):
-                is_global_block = i % global_atten_freq == 0 or i == num_blocks
+                is_global_block = i % self.global_atten_freq == 0 or i == num_blocks
                 if is_global_block:
                     if is_window_splitted:
                         x = self.window_split_reverse(x, x_size=(H, W))
