@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from functools import partial
-from .pos_embed import interpolate_pos_embed
+from .pos_embed import interpolate_pos_embed_train
 
 
 class Mlp(nn.Module):
@@ -141,7 +141,7 @@ class VisionTransformer(nn.Module):
             checkpoint_model = checkpoint['model']
 
             # interpolate position embedding
-            interpolate_pos_embed(self, checkpoint_model)
+            interpolate_pos_embed_train(self, checkpoint_model)
 
             # load pre-trained model
             msg = self.load_state_dict(checkpoint_model, strict=False)
@@ -222,7 +222,7 @@ class VisionTransformer(nn.Module):
 
         return x
 
-    def forward(self, x, other_feats=None, global_atten_freq=4, keep_shape=False):
+    def forward(self, x, other_feats=None, global_atten_freq=1, keep_shape=False):
         B, C, H, W = x.shape
 
         x = self.patch_embed(x)
@@ -230,18 +230,13 @@ class VisionTransformer(nn.Module):
             x += other_feats
         x = self.pos_drop(x + self.pos_embed[:, 1:])
 
+        num_blocks = len(self.blocks)
         if global_atten_freq <= 1:
             # perform global attention for all blocks
             for i in range(num_blocks):
                 x = self.blocks[i](x)
         else:
-            # perform global attention for every 4th block,
-            # otherwise perform window attention.
-            num_blocks = len(self.blocks)
-            # this special setting is for the ViT-B model, and it works better
-            if num_blocks == 12: 
-                global_atten_freq = 6
-
+            # perform global attention sparsely with window attention
             is_window_splitted = False
             for i in range(1, num_blocks + 1):
                 is_global_block = i % global_atten_freq == 0 or i == num_blocks
@@ -267,20 +262,24 @@ class VisionTransformer(nn.Module):
 
 def vit_xtiny_patch16(**kwargs):
     model = VisionTransformer(
-        patch_size=(16, 16), embed_dim=160, depth=8, num_heads=4, mlp_ratio=4, qkv_bias=True, **kwargs)
+        patch_size=(16, 16), embed_dim=160, depth=8, num_heads=4, mlp_ratio=4, 
+        qkv_bias=True, **kwargs)
     return model
 
 def vit_base_patch16(**kwargs):
     model = VisionTransformer(
-        patch_size=(16, 16), embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, **kwargs)
+        patch_size=(16, 16), embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, 
+        qkv_bias=True, **kwargs)
     return model
 
 def vit_large_patch16(**kwargs):
     model = VisionTransformer(
-        patch_size=(16, 16), embed_dim=1024, depth=24, num_heads=16, mlp_ratio=4, qkv_bias=True, **kwargs)
+        patch_size=(16, 16), embed_dim=1024, depth=24, num_heads=16, mlp_ratio=4, 
+        qkv_bias=True, **kwargs)
     return model
 
 def vit_huge_patch14(**kwargs):
     model = VisionTransformer(
-        patch_size=(14,14), embed_dim=1280, depth=32, num_heads=16, mlp_ratio=4, qkv_bias=True, **kwargs)
+        patch_size=(14,14), embed_dim=1280, depth=32, num_heads=16, mlp_ratio=4, 
+        qkv_bias=True, **kwargs)
     return model

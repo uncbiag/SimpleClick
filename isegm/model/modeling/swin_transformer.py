@@ -680,7 +680,7 @@ class SwinTransfomerSegHead(BaseDecodeHead):
             norm_cfg=self.norm_cfg)
 
     def forward(self, inputs):
-        # Receive 4 stage backbone feature map: 1/4, 1/8, 1/16, 1/32
+        # Receive 4 stage backbone feature maps: 1/4, 1/8, 1/16, 1/32
         inputs = self._transform_inputs(inputs)
         outs = []
         for idx in range(len(inputs)):

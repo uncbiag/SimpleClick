@@ -70,7 +70,6 @@ class BaseDecodeHead(BaseModule, metaclass=ABCMeta):
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
         self.in_index = in_index
-        # self.loss_decode = build_loss(loss_decode)
         self.loss_decode = loss_decode
         self.ignore_index = ignore_index
         self.align_corners = align_corners

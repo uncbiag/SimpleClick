@@ -1,9 +1,11 @@
-import math
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from mmcv.cnn import ConvModule
+
 from isegm.utils.serialization import serialize
-from .is_model import ISModel
-from .modeling.models_vit import VisionTransformer, PatchEmbed
-from .modeling.swin_transformer import SwinTransfomerSegHead
+from isegm.model.is_model import ISModel
+from isegm.model.modeling.models_vit import VisionTransformer, PatchEmbed
 
 
 class SimpleFPN(nn.Module):
@@ -57,6 +59,59 @@ class SimpleFPN(nn.Module):
         return [x_down_4, x_down_8, x_down_16, x_down_32]
 
 
+class SegmentationHead(nn.Module):
+    """ The all MLP segmentation head
+    """
+    def __init__(self, in_select_index, in_channels, out_channels, dropout_ratio, 
+                 num_classes, interpolate_mode='bilinear', align_corners=False):
+        super().__init__()
+
+        self.in_select_index=in_select_index
+        self.dropout_ratio = dropout_ratio
+        self.interpolate_mode = interpolate_mode
+        self.align_corners = align_corners
+
+        assert len(in_channels) == len(in_select_index)
+        num_inputs = len(in_channels)
+
+        self.dropout = nn.Dropout2d(dropout_ratio) if dropout_ratio > 0 else None
+
+        self.convs = nn.ModuleList()
+        for i in range(num_inputs):
+            self.convs.append(
+                ConvModule(
+                    in_channels=in_channels[i],
+                    out_channels=out_channels,
+                    kernel_size=1))
+
+        self.fusion_conv = ConvModule(
+            in_channels=out_channels * num_inputs,
+            out_channels=out_channels,
+            kernel_size=1)
+
+        self.seg_conv = nn.Conv2d(out_channels, num_classes, kernel_size=1)
+
+    def forward(self, inputs):
+        inputs = [inputs[i] for i in self.in_select_index]
+        outs = []
+        for idx in range(len(inputs)):
+            x = inputs[idx]
+            conv = self.convs[idx]
+            outs.append(
+                F.interpolate(
+                    input=conv(x),
+                    size=inputs[0].shape[2:],
+                    mode=self.interpolate_mode,
+                    align_corners=self.align_corners))
+
+        out = self.fusion_conv(torch.cat(outs, dim=1))
+        if self.dropout is not None:
+            out = self.dropout(out)
+        out = self.seg_conv(out)
+
+        return out
+
+
 class PlainVitModel(ISModel):
     @serialize
     def __init__(
@@ -79,7 +134,7 @@ class PlainVitModel(ISModel):
 
         self.backbone = VisionTransformer(**backbone_params)
         self.neck = SimpleFPN(**neck_params)
-        self.head = SwinTransfomerSegHead(**head_params)
+        self.head = SegmentationHead(**head_params)
 
     def backbone_forward(self, image, coord_features):
         coord_features = self.patch_embed_coords(coord_features)

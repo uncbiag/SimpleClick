@@ -69,7 +69,7 @@ def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
 
 # We need this interpolation during training because the pretrained model
 # may use different image size (e.g. 224x224) than that of training (e.g., 448x448).
-def interpolate_pos_embed(model, pretrained_model):
+def interpolate_pos_embed_train(model, pretrained_model):
     if 'pos_embed' in pretrained_model:
         pos_embed_checkpoint = pretrained_model['pos_embed']
         embedding_size = pos_embed_checkpoint.shape[-1]
