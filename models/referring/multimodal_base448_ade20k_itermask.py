@@ -1,6 +1,6 @@
 from isegm.utils.exp_imports.default import *
 
-MODEL_NAME = 'ade20k_plainvit_base448'
+MODEL_NAME = 'ade20k_multimodal_base448'
 
 
 def main(cfg):
@@ -38,7 +38,7 @@ def init_model(cfg):
         out_channels=256
     )
 
-    model = PlainVitModel(
+    model = MultiModalPlainVitModel(
         use_disks=True,
         norm_radius=5,
         with_prev_mask=True,
