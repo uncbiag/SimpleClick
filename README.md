@@ -1,4 +1,4 @@
-# SimpleClick: Interactive Image Segmentation/Editing/Generation using Vision Transformers
+# SimpleClick: Interactive Image Segmentation, Editing, and Generation using Vision Transformers
 
 ## Introduction
 We aim to develop SimpleClick as a practical tool for interactive image segmentation, editing, and generation. To reproduce results of our published papers, please refer to the following branches.
