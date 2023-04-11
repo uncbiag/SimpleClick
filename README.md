@@ -5,7 +5,7 @@ We aim to develop SimpleClick as a practical tool for interactive image segmenta
 
 ## Branches
 
-> \[[v1.0](https://github.com/uncbiag/SimpleClick/tree/v1.0)] Implementation of our paper "SimpleClick: Interactive Image Segmentation with Simple Vision Transformers" (arXiV'22) [[PDF](https://arxiv.org/pdf/2210.11006.pdf)]. Use this v1.0 branch to run the ViT-H model used in [Segment Anything](https://github.com/facebookresearch/segment-anything).
+> \[[v1.0](https://github.com/uncbiag/SimpleClick/tree/v1.0)] Implementation of our paper "SimpleClick: Interactive Image Segmentation with Simple Vision Transformers" (arXiV'22) [[PDF](https://arxiv.org/pdf/2210.11006.pdf)]. This branch only supports interactive image segmentation. 
 
 ## Features
 - [x] Interactive Image Segmentation
