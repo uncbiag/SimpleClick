@@ -90,7 +90,8 @@ def split_points_by_order(tpoints: torch.Tensor, groups):
                 continue
 
             is_negative = int(pindx >= num_points)
-            if group_id >= num_groups or (group_id == 0 and is_negative):  # disable negative first click
+             # disable negative first click
+            if group_id >= num_groups or (group_id == 0 and is_negative):
                 group_id = num_groups - 1
 
             new_point_indx = last_point_indx_group[bindx, group_id, is_negative]
