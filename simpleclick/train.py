@@ -6,20 +6,15 @@ import torch
 from isegm.utils.exp import init_experiment
 
 
-def main():
+def main(rank):
     args = parse_args()
-    if args.temp_model_path:
-        model_script = load_module(args.temp_model_path)
-    else:
-        model_script = load_module(args.model_path)
-
+    model_script = load_module(args.model_path)
     model_base_name = getattr(model_script, 'MODEL_NAME', None)
 
-    args.distributed = 'WORLD_SIZE' in os.environ
+    args.local_rank = rank
     cfg = init_experiment(args, model_base_name)
 
     torch.backends.cudnn.benchmark = True
-    torch.multiprocessing.set_sharing_strategy('file_system')
 
     model_script.main(cfg)
 
@@ -40,11 +35,6 @@ def parse_args():
     parser.add_argument('--batch-size', type=int, default=-1,
                         help='You can override model batch size by specify positive number.')
 
-    parser.add_argument('--ngpus', type=int, default=1,
-                        help='Number of GPUs. '
-                             'If you only specify "--gpus" argument, the ngpus value will be calculated automatically. '
-                             'You should use either this argument or "--gpus".')
-
     parser.add_argument('--gpus', type=str, default='', required=False,
                         help='Ids of used GPUs. You should use either this argument or "--ngpus".')
     
@@ -62,15 +52,6 @@ def parse_args():
     parser.add_argument('--weights', type=str, default=None,
                         help='Model weights will be loaded from the specified path if you use this argument.')
 
-    parser.add_argument('--temp-model-path', type=str, default='',
-                        help='Do not use this argument (for internal purposes).')
-
-    parser.add_argument("--local_rank", type=int, default=0)
-
-    # parameters for experimenting
-    parser.add_argument('--layerwise-decay', action='store_true', 
-                        help='layer wise decay for transformer blocks.')
-
     return parser.parse_args()
 
 
@@ -83,4 +64,5 @@ def load_module(script_path):
 
 
 if __name__ == '__main__':
-    main()
+    rank = int(os.environ['LOCAL_RANK'])
+    main(rank)

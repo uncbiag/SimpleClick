@@ -48,9 +48,8 @@ class ISTrainer(object):
         self.click_models = click_models
         self.prev_mask_drop_prob = prev_mask_drop_prob
 
-        if cfg.distributed:
-            cfg.batch_size //= cfg.ngpus
-            cfg.val_batch_size //= cfg.ngpus
+        cfg.batch_size //= cfg.ngpus
+        cfg.val_batch_size //= cfg.ngpus
 
         if metrics is None:
             metrics = []
@@ -72,27 +71,28 @@ class ISTrainer(object):
 
         self.train_data = DataLoader(
             trainset, cfg.batch_size,
-            sampler=get_sampler(trainset, shuffle=True, distributed=cfg.distributed),
+            sampler=get_sampler(trainset, shuffle=True, distributed=True),
             drop_last=True, pin_memory=True,
             num_workers=cfg.workers
         )
 
         self.val_data = DataLoader(
             valset, cfg.val_batch_size,
-            sampler=get_sampler(valset, shuffle=False, distributed=cfg.distributed),
+            sampler=get_sampler(valset, shuffle=False, distributed=True),
             drop_last=True, pin_memory=True,
             num_workers=cfg.workers
         )
 
         if layerwise_decay:
-            self.optim = get_optimizer_with_layerwise_decay(model, optimizer, optimizer_params)
+            self.optim = get_optimizer_with_layerwise_decay(model, optimizer, 
+                                                            optimizer_params)
         else:
             self.optim = get_optimizer(model, optimizer, optimizer_params)
         model = self._load_weights(model)
 
         if cfg.multi_gpu:
-            model = get_dp_wrapper(cfg.distributed)(model, device_ids=cfg.gpu_ids,
-                                                    output_device=cfg.gpu_ids[0])
+            model = get_dp_wrapper()(model, device_ids=[cfg.gpu_ids[cfg.local_rank]], 
+                                     find_unused_parameters=True)
 
         if self.is_master:
             logger.info(model)
@@ -133,8 +133,7 @@ class ISTrainer(object):
             self.sw = SummaryWriterAvg(log_dir=str(self.cfg.LOGS_PATH),
                                        flush_secs=10, dump_period=self.tb_dump_period)
 
-        if self.cfg.distributed:
-            self.train_data.sampler.set_epoch(epoch)
+        self.train_data.sampler.set_epoch(epoch)
 
         log_prefix = 'Train' + self.task_prefix.capitalize()
         tbar = tqdm(self.train_data, file=self.tqdm_out, ncols=100)\

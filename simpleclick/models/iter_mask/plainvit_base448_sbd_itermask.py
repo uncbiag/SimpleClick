@@ -19,7 +19,7 @@ def init_model(cfg):
         in_chans=3,
         embed_dim=768,
         depth=12,
-        global_atten_freq=1, # set to 1 to perform global attention for all blocks
+        global_atten_freq=3,
         num_heads=12,
         mlp_ratio=4, 
         qkv_bias=True,
@@ -114,7 +114,6 @@ def train(model, cfg, model_cfg):
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
-                        layerwise_decay=cfg.layerwise_decay,
                         lr_scheduler=lr_scheduler,
                         checkpoint_interval=[(0, 20), (50, 1)],
                         image_dump_interval=300,

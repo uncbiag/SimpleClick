@@ -57,8 +57,8 @@ def get_sampler(dataset, shuffle, distributed):
         return data.SequentialSampler(dataset)
 
 
-def get_dp_wrapper(distributed):
-    class DPWrapper(torch.nn.parallel.DistributedDataParallel if distributed else torch.nn.DataParallel):
+def get_dp_wrapper():
+    class DPWrapper(torch.nn.parallel.DistributedDataParallel):
         def __getattr__(self, name):
             try:
                 return super().__getattr__(name)

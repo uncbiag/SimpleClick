@@ -120,7 +120,7 @@ class VisionTransformer(nn.Module):
                                  in_chans=in_chans, embed_dim=embed_dim, flatten=True)
         num_patches = self.patch_embed.num_patches
 
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        # self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
         self.pos_drop = nn.Dropout(p=pos_drop_rate)
 
@@ -155,7 +155,7 @@ class VisionTransformer(nn.Module):
 
         # timm's trunc_normal_(std=.02) is effectively similar to normal_(std=0.02) 
         # as the default cutoff in trunc_normal_(std=.02) is too big (-2., 2.)
-        nn.init.normal_(self.cls_token, std=.02)
+        # nn.init.normal_(self.cls_token, std=.02)
         nn.init.normal_(self.pos_embed, std=.02)
 
         self.apply(self._init_weights)
@@ -171,7 +171,7 @@ class VisionTransformer(nn.Module):
             nn.init.constant_(m.weight, 1.0)
 
     def no_weight_decay(self):
-        return {'pos_embed', 'cls_token', 'dist_token'}
+        return {'pos_embed', 'dist_token'}
 
     def window_split(self, x, x_size=(448, 448), win_size=(224, 224)):
         """ window splitting for window attention (the default window size is 224x224)
