@@ -109,9 +109,9 @@ class VisionTransformer(nn.Module):
     """ Vision Transformer with support for global average pooling 
     """    
     def __init__(self, img_size=(224,224), patch_size=(16, 16), in_chans=3, 
-                 embed_dim=768, depth=12, global_atten_freq=1, num_heads=12, mlp_ratio=4., qkv_bias=True,
-                 pos_drop_rate=0., attn_drop_rate=0., proj_drop_rate=0., 
-                 norm_layer=None, act_layer=None):
+                 embed_dim=768, depth=12, global_atten_freq=1, num_heads=12, 
+                 mlp_ratio=4., qkv_bias=True, pos_drop_rate=0., attn_drop_rate=0.,
+                 proj_drop_rate=0., norm_layer=None, act_layer=None):
         super().__init__()
         self.global_atten_freq = global_atten_freq
         self.embed_dim = embed_dim
@@ -120,7 +120,6 @@ class VisionTransformer(nn.Module):
                                  in_chans=in_chans, embed_dim=embed_dim, flatten=True)
         num_patches = self.patch_embed.num_patches
 
-        # self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
         self.pos_drop = nn.Dropout(p=pos_drop_rate)
 
@@ -155,7 +154,6 @@ class VisionTransformer(nn.Module):
 
         # timm's trunc_normal_(std=.02) is effectively similar to normal_(std=0.02) 
         # as the default cutoff in trunc_normal_(std=.02) is too big (-2., 2.)
-        # nn.init.normal_(self.cls_token, std=.02)
         nn.init.normal_(self.pos_embed, std=.02)
 
         self.apply(self._init_weights)
