@@ -9,8 +9,9 @@ We aim to develop SimpleClick as a practical tool for interactive image segmenta
 
 ## Features
 - [x] Interactive Image Segmentation
-- [ ]  Image Editing
-- [ ]  Image Generation
+- [ ] Universal Image Segmentation
+- [ ] Image Editing
+- [ ] Image Generation
 
 ## License
 The code is released under the MIT License. It is a short, permissive software license. Basically, you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source. 
