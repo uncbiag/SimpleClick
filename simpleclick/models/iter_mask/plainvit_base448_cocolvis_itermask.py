@@ -1,5 +1,4 @@
 from isegm.utils.exp_imports.default import *
-from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
 
 MODEL_NAME = 'cocolvis_plainvit_base448'
 
@@ -20,6 +19,7 @@ def init_model(cfg):
         in_chans=3,
         embed_dim=768,
         depth=12,
+        global_atten_freq=3,
         num_heads=12,
         mlp_ratio=4, 
         qkv_bias=True,
@@ -32,12 +32,10 @@ def init_model(cfg):
 
     head_params = dict(
         in_channels=[128, 256, 512, 1024],
-        in_index=[0, 1, 2, 3],
+        in_select_index=[0, 1, 2, 3],
         dropout_ratio=0.1,
         num_classes=1,
-        loss_decode=CrossEntropyLoss(),
-        align_corners=False,
-        channels=256,
+        out_channels=256,
     )
 
     model = PlainVitModel(
