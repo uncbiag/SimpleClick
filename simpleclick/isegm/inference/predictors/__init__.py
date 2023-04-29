@@ -2,7 +2,6 @@ from .base import BasePredictor
 from .brs import InputBRSPredictor, FeatureBRSPredictor, HRNetFeatureBRSPredictor
 from .brs_functors import InputOptimizer, ScaleBiasOptimizer
 from isegm.inference.transforms import ZoomIn
-from isegm.model.is_hrnet_model import HRNetModel
 
 
 def get_predictor(net, brs_mode, device,
@@ -60,11 +59,7 @@ def get_predictor(net, brs_mode, device,
                                          optimizer_params=lbfgs_params_,
                                          **brs_opt_func_params)
 
-        if isinstance(net, HRNetModel):
-            FeaturePredictor = HRNetFeatureBRSPredictor
-            insertion_mode = {'after_c4': 'A', 'after_aspp': 'A', 'after_deeplab': 'C'}[insertion_mode]
-        else:
-            FeaturePredictor = FeatureBRSPredictor
+        FeaturePredictor = FeatureBRSPredictor
 
         predictor = FeaturePredictor(net, device,
                                      opt_functor=opt_functor,
