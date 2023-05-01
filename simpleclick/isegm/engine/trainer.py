@@ -32,7 +32,6 @@ class ISTrainer(object):
                  metrics=None,
                  additional_val_metrics=None,
                  max_num_next_clicks=0,
-                 click_models=None,
                  prev_mask_drop_prob=0.0,
                 ):
         self.cfg = cfg
@@ -43,7 +42,6 @@ class ISTrainer(object):
         self.tb_dump_period = tb_dump_period
         self.max_num_next_clicks = max_num_next_clicks
 
-        self.click_models = click_models
         self.prev_mask_drop_prob = prev_mask_drop_prob
 
         cfg.batch_size //= cfg.ngpus
@@ -109,13 +107,6 @@ class ISTrainer(object):
                     self.lr_scheduler.step()
 
         self.tqdm_out = TqdmToLogger(logger, level=logging.INFO)
-
-        if self.click_models is not None:
-            for click_model in self.click_models:
-                for param in click_model.parameters():
-                    param.requires_grad = False
-                click_model.to(self.device)
-                click_model.eval()
 
     def run(self, num_epochs, start_epoch=None, validation=False):
         if start_epoch is None:
@@ -264,14 +255,8 @@ class ISTrainer(object):
                     if not validation:
                         self.net.eval()
 
-                    if self.click_models is None or click_indx >= len(self.click_models):
-                        eval_model = self.net
-                    else:
-                        eval_model = self.click_models[click_indx]
-
                     net_input = torch.cat((image, prev_output), dim=1) if self.net.with_prev_mask else image
-                    prev_output = torch.sigmoid(eval_model(net_input, points)['instances'])
-
+                    prev_output = torch.sigmoid(self.net(net_input, points)['instances'])
                     points = get_next_points(prev_output, orig_gt_mask, points, click_indx + 1)
 
                     if not validation:
