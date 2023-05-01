@@ -37,6 +37,8 @@ IMAGENET_PRETRAINED_MODELS:
   HRF_BASE: "./weights/pretrained/hrt_base.pth"
   SWIN_BASE: "./weights/pretrained/swin_base_patch4_window12_384_22k.pth"
   SWIN_LARGE: "./weights/pretrained/swin_large_patch4_window12_384_22k.pth"
-  MAE_BASE: "./weights/pretrained/mae_pretrain_vit_base.pth"
-  MAE_LARGE: "./weights/pretrained/mae_pretrain_vit_large.pth"
-  MAE_HUGE: "./weights/pretrained/mae_pretrain_vit_huge.pth"
+
+MAE_PRETRAINED_MODELS:  
+  VIT_BASE: "./weights/pretrained/mae_pretrain_vit_base.pth"
+  VIT_LARGE: "./weights/pretrained/mae_pretrain_vit_large.pth"
+  VIT_HUGE: "./weights/pretrained/mae_pretrain_vit_huge.pth"

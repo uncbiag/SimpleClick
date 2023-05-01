@@ -12,6 +12,7 @@ def init_model(cfg):
     model_cfg = edict()
     model_cfg.crop_size = (448, 448)
     model_cfg.num_max_points = 24
+    model_cfg.num_max_next_points = 3
 
     backbone_params = dict(
         img_size=model_cfg.crop_size,
@@ -47,7 +48,7 @@ def init_model(cfg):
         head_params=head_params,
     )
 
-    model.backbone.init_weights_from_pretrained(cfg.IMAGENET_PRETRAINED_MODELS.MAE_BASE)
+    model.backbone.init_weights_from_pretrained(cfg.MAE_PRETRAINED_MODELS.VIT_BASE)
     model.to(cfg.device)
 
     return model, model_cfg
@@ -110,7 +111,7 @@ def train(model, cfg, model_cfg):
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
                            milestones=[50, 55], gamma=0.1)
-    trainer = ISTrainer(model, cfg, model_cfg, loss_cfg,
+    trainer = ISTrainer(model, cfg, loss_cfg,
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
@@ -119,5 +120,5 @@ def train(model, cfg, model_cfg):
                         image_dump_interval=300,
                         metrics=[AdaptiveIoU()],
                         max_interactive_points=model_cfg.num_max_points,
-                        max_num_next_clicks=3)
+                        max_num_next_clicks=model_cfg.num_max_next_points)
     trainer.run(num_epochs=55, validation=False)

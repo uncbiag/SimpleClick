@@ -19,7 +19,7 @@ def init_model(cfg):
         in_chans=3,
         embed_dim=1280,
         depth=32,
-        global_atten_freq=8,  # set to 1 to perform global attention for all blocks
+        global_atten_freq=8,
         num_heads=16,
         mlp_ratio=4, 
         qkv_bias=True,
@@ -47,7 +47,7 @@ def init_model(cfg):
         head_params=head_params,
     )
 
-    model.backbone.init_weights_from_pretrained(cfg.IMAGENET_PRETRAINED_MODELS.MAE_HUGE)
+    model.backbone.init_weights_from_pretrained(cfg.MAE_PRETRAINED_MODELS.VIT_HUGE)
     model.to(cfg.device)
 
     return model, model_cfg
@@ -70,7 +70,8 @@ def train(model, cfg, model_cfg):
                          rotate_limit=(-3, 3), border_mode=0, p=0.75),
         PadIfNeeded(min_height=crop_size[0], min_width=crop_size[1], border_mode=0),
         RandomCrop(*crop_size),
-        RandomBrightnessContrast(brightness_limit=(-0.25, 0.25), contrast_limit=(-0.15, 0.4), p=0.75),
+        RandomBrightnessContrast(brightness_limit=(-0.25, 0.25), 
+                                 contrast_limit=(-0.15, 0.4), p=0.75),
         RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.75)
     ], p=1.0)
 
@@ -120,5 +121,5 @@ def train(model, cfg, model_cfg):
                         image_dump_interval=300,
                         metrics=[AdaptiveIoU()],
                         max_interactive_points=model_cfg.num_max_points,
-                        max_num_next_clicks=3)
+                        max_num_next_clicks=model_cfg.num_max_next_points)
     trainer.run(num_epochs=55, validation=False)

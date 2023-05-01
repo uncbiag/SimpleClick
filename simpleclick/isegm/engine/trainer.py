@@ -19,7 +19,7 @@ from .optimizer import get_optimizer, get_optimizer_with_layerwise_decay
 
 
 class ISTrainer(object):
-    def __init__(self, model, cfg, model_cfg, loss_cfg,
+    def __init__(self, model, cfg, loss_cfg,
                  trainset, valset,
                  optimizer='adam',
                  optimizer_params=None,
@@ -31,18 +31,16 @@ class ISTrainer(object):
                  lr_scheduler=None,
                  metrics=None,
                  additional_val_metrics=None,
-                 net_inputs=('images', 'points'),
                  max_num_next_clicks=0,
                  click_models=None,
                  prev_mask_drop_prob=0.0,
-                 ):
+                ):
         self.cfg = cfg
-        self.model_cfg = model_cfg
+        self.is_master = self.cfg.local_rank == 0
         self.max_interactive_points = max_interactive_points
         self.loss_cfg = loss_cfg
         self.val_loss_cfg = deepcopy(loss_cfg)
         self.tb_dump_period = tb_dump_period
-        self.net_inputs = net_inputs
         self.max_num_next_clicks = max_num_next_clicks
 
         self.click_models = click_models
@@ -66,8 +64,10 @@ class ISTrainer(object):
         self.trainset = trainset
         self.valset = valset
 
-        logger.info(f'Dataset of {trainset.get_samples_number()} samples was loaded for training.')
-        logger.info(f'Dataset of {valset.get_samples_number()} samples was loaded for validation.')
+        logger.info(f'Dataset of {trainset.get_samples_number()} \
+            samples was loaded for training.')
+        logger.info(f'Dataset of {valset.get_samples_number()} \
+            samples was loaded for validation.')
 
         self.train_data = DataLoader(
             trainset, cfg.batch_size,
@@ -117,7 +117,7 @@ class ISTrainer(object):
                 click_model.to(self.device)
                 click_model.eval()
 
-    def run(self, num_epochs, start_epoch=None, validation=True):
+    def run(self, num_epochs, start_epoch=None, validation=False):
         if start_epoch is None:
             start_epoch = self.cfg.start_epoch
 
@@ -365,10 +365,6 @@ class ISTrainer(object):
             logger.info(f'Load checkpoint from path: {checkpoint_path}')
             load_weights(net, str(checkpoint_path))
         return net
-
-    @property
-    def is_master(self):
-        return self.cfg.local_rank == 0
 
 
 def get_next_points(pred, gt, points, click_indx, pred_thresh=0.49):
