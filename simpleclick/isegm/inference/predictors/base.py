@@ -77,7 +77,17 @@ class BasePredictor(object):
 
     def _get_prediction(self, image_nd, clicks_lists, is_image_changed):
         points_nd = self.get_points_nd(clicks_lists)
-        return self.net(image_nd, points_nd)['instances']
+
+        prev_mask = None
+        if hasattr(self.net, 'with_prev_mask') and self.net.with_prev_mask:
+            prev_mask = image_nd[:, 3:, :, :]
+            image_nd = image_nd[:, :3, :, :]
+
+        prompts = {'points': points_nd, 'prev_mask': prev_mask}
+        prompt_feats = self.net.get_prompt_feats(image_nd.shape, prompts)
+        image_feats = self.net.get_image_feats(image_nd)
+
+        return self.net(image_nd.shape, image_feats, prompt_feats)['instances']
 
     def _get_transform_states(self):
         return [x.get_state() for x in self.transforms]

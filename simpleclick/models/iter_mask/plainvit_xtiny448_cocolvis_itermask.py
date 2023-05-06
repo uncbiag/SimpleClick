@@ -113,7 +113,6 @@ def train(model, cfg, model_cfg):
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
-                        layerwise_decay=cfg.layerwise_decay,
                         lr_scheduler=lr_scheduler,
                         checkpoint_interval=[(0, 50), (300, 5)],
                         image_dump_interval=1000,

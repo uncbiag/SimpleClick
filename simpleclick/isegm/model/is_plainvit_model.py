@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule
 
-from isegm.utils.serialization import serialize
-from isegm.model.is_model import ISModel
+from isegm.model.ops import DistMaps, BatchImageNormalize
 from isegm.model.modeling.models_vit import VisionTransformer, PatchEmbed
+from isegm.utils.serialization import serialize
 
 
 class SimpleFPN(nn.Module):
@@ -112,19 +112,41 @@ class SegmentationHead(nn.Module):
         return out
 
 
-class PlainVitModel(ISModel):
+class PlainVitModel(nn.Module):
     @serialize
     def __init__(
         self,
         backbone_params={},
         neck_params={}, 
         head_params={},
-        **kwargs
+        fusion_type='naive',
+        with_aux_output=False, 
+        norm_radius=5, 
+        use_disks=False, 
+        cpu_dist_maps=False, 
+        with_prev_mask=False, 
+        norm_mean_std=([.485, .456, .406], [.229, .224, .225])        
         ):
 
-        super().__init__(**kwargs)
+        super().__init__()
 
-        self.patch_embed_coords = PatchEmbed(
+        self.with_aux_output = with_aux_output
+        self.with_prev_mask = with_prev_mask
+        self.normalization = BatchImageNormalize(norm_mean_std[0], norm_mean_std[1])
+        self.fusion_type = fusion_type
+
+        self.coord_feature_ch = 2
+        if self.with_prev_mask:
+            self.coord_feature_ch += 1
+
+        self.dist_maps = DistMaps(
+            norm_radius=norm_radius, 
+            spatial_scale=1.0,
+            cpu_mode=cpu_dist_maps, 
+            use_disks=use_disks
+        )
+
+        self.prompts_patch_embed = PatchEmbed(
             img_size= backbone_params['img_size'],
             patch_size=backbone_params['patch_size'], 
             in_chans=3 if self.with_prev_mask else 2, 
@@ -136,10 +158,47 @@ class PlainVitModel(ISModel):
         self.neck = SimpleFPN(**neck_params)
         self.head = SegmentationHead(**head_params)
 
-    def backbone_forward(self, image, coord_features):
-        coord_features = self.patch_embed_coords(coord_features)
-        single_scale_features = self.backbone(image, coord_features, keep_shape=True)
-        multi_scale_features = self.neck(single_scale_features)
-        seg_prob = self.head(multi_scale_features)
+    def get_image_feats(self, image, keep_shape=True):
+        image = self.normalization(image)
+        image_feats = self.backbone(image, keep_shape=keep_shape)
+
+        return image_feats
+
+    def get_prompt_feats(self, image_shape, prompts, keep_shape=True):
+        points = prompts['points']
+        prompt_maps = self.dist_maps(image_shape, points)
+
+        prev_mask = prompts['prev_mask']
+        if prev_mask is not None:
+            prompt_maps = torch.cat((prev_mask, prompt_maps), dim=1) 
+
+        prompt_feats = self.prompts_patch_embed(prompt_maps)
+
+        if keep_shape:
+            B = image_shape[0]
+            C_new = prompt_feats.shape[-1]
+            H_new = image_shape[2] // self.prompts_patch_embed.patch_size[0]
+            W_new = image_shape[3] // self.prompts_patch_embed.patch_size[1]
+            prompt_feats = prompt_feats.transpose(1,2).contiguous().reshape(B, C_new, H_new, W_new)
+
+        return prompt_feats
+
+    def fusion(self, image_feats, prompt_feats):
+        if self.fusion_type == 'naive':
+            return image_feats + prompt_feats
+        else:
+            raise ValueError('fusion type not defined')
+
+    def forward(self, image_shape, image_feats, prompt_feats):
+        fused_features = self.fusion(image_feats, prompt_feats)
+        multiscale_features = self.neck(fused_features)
+        seg_prob = self.head(multiscale_features)
+
+        seg_prob = nn.functional.interpolate(
+            seg_prob, 
+            size=image_shape[2:], 
+            mode='bilinear', 
+            align_corners=True
+        )
 
         return {'instances': seg_prob, 'instances_aux': None}

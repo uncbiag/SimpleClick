@@ -246,17 +246,18 @@ class ISTrainer(object):
 
             last_click_indx = None
 
+            image_feats = self.net.get_image_feats(image)
             with torch.no_grad():
                 num_iters = random.randint(0, self.max_num_next_clicks)
-
                 for click_indx in range(num_iters):
                     last_click_indx = click_indx
 
                     if not validation:
                         self.net.eval()
 
-                    net_input = torch.cat((image, prev_output), dim=1) if self.net.with_prev_mask else image
-                    prev_output = torch.sigmoid(self.net(net_input, points)['instances'])
+                    prompts = {'points': points, 'prev_mask': prev_output}
+                    prompt_feats = self.net.get_prompt_feats(image.shape, prompts)
+                    prev_output = torch.sigmoid(self.net(image.shape, image_feats, prompt_feats)['instances'])
                     points = get_next_points(prev_output, orig_gt_mask, points, click_indx + 1)
 
                     if not validation:
@@ -268,8 +269,9 @@ class ISTrainer(object):
 
             batch_data['points'] = points
 
-            net_input = torch.cat((image, prev_output), dim=1) if self.net.with_prev_mask else image
-            output = self.net(net_input, points)
+            prompts = {'points': points, 'prev_mask': prev_output}
+            prompt_feats = self.net.get_prompt_feats(image.shape, prompts)
+            output = self.net(image.shape, image_feats, prompt_feats)
 
             loss = 0.0
             loss = self.add_loss('instance_loss', loss, losses_logging, validation,

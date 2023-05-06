@@ -87,8 +87,8 @@ class DistMaps(nn.Module):
 
         return coords
 
-    def forward(self, x, coords):
-        return self.get_coord_features(coords, x.shape[0], x.shape[2], x.shape[3])
+    def forward(self, img_size, coords):
+        return self.get_coord_features(coords, img_size[0], img_size[2], img_size[3])
 
 
 class ScaleLayer(nn.Module):

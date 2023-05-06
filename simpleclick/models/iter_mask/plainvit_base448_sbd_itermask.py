@@ -71,7 +71,8 @@ def train(model, cfg, model_cfg):
                          rotate_limit=(-3, 3), border_mode=0, p=0.75),
         PadIfNeeded(min_height=crop_size[0], min_width=crop_size[1], border_mode=0),
         RandomCrop(*crop_size),
-        RandomBrightnessContrast(brightness_limit=(-0.25, 0.25), contrast_limit=(-0.15, 0.4), p=0.75),
+        RandomBrightnessContrast(brightness_limit=(-0.25, 0.25), 
+                                 contrast_limit=(-0.15, 0.4), p=0.75),
         RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.75)
     ], p=1.0)
 
