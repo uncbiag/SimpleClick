@@ -39,13 +39,25 @@ def init_model(cfg):
         out_channels=256,
     )
 
+    fusion_params = dict(
+        type='deep',
+        depth=2,
+        params=dict(
+            dim=768,
+            num_heads=12,
+            mlp_ratio=4, 
+            qkv_bias=True,        
+        )
+    )
+
     model = PlainVitModel(
-        use_disks=True,
-        norm_radius=5,
-        with_prev_mask=True,
         backbone_params=backbone_params,
         neck_params=neck_params,
         head_params=head_params,
+        fusion_params=fusion_params,
+        use_disks=True,
+        norm_radius=5,
+        with_prev_mask=True,
     )
 
     model.backbone.init_weights_from_pretrained(cfg.MAE_PRETRAINED_MODELS.VIT_BASE)

@@ -5,6 +5,7 @@ from mmcv.cnn import ConvModule
 
 from isegm.model.ops import DistMaps, BatchImageNormalize
 from isegm.model.modeling.models_vit import VisionTransformer, PatchEmbed
+from isegm.model.modeling.cross_attention import CrossBlock
 from isegm.utils.serialization import serialize
 
 
@@ -112,6 +113,48 @@ class SegmentationHead(nn.Module):
         return out
 
 
+class CrossAttentionBlock(nn.Module):
+    def __init__(self, dim, num_heads, mlp_ratio=4., mlp_drop=0., qkv_bias=False,
+            attn_drop=0., proj_drop=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm):
+        super().__init__()
+
+        self.image_to_prompt = CrossBlock(dim=dim, num_heads=num_heads,
+            mlp_ratio=mlp_ratio, mlp_drop=mlp_drop, qkv_bias=qkv_bias,
+            attn_drop=attn_drop, proj_drop=proj_drop, act_layer=act_layer, 
+            norm_layer=norm_layer)
+        
+        self.prompt_to_image = CrossBlock(dim=dim, num_heads=num_heads,
+            mlp_ratio=mlp_ratio, mlp_drop=mlp_drop, qkv_bias=qkv_bias,
+            attn_drop=attn_drop, proj_drop=proj_drop, act_layer=act_layer, 
+            norm_layer=norm_layer)
+
+
+    def forward(self, image_feats, prompt_feats, keep_shape=False):
+        """ image_feats: tensor of shape [B, C, H, W]
+            prompt_feats: tensor of shape [B, C, H, W]
+        """
+        assert image_feats.shape == prompt_feats.shape
+
+        # reshape to [B, N, C]
+        B, C, H, W = image_feats.shape
+        N = H * W
+
+        prompt_feats = prompt_feats.permute(0, 2, 3, 1).contiguous().reshape(B, N, C)
+        image_feats = image_feats.permute(0, 2, 3, 1).contiguous().reshape(B, N, C)
+
+        prompt_feats = self.prompt_to_image(prompt_feats, image_feats)
+        image_feats = self.image_to_prompt(image_feats, prompt_feats)
+
+        if keep_shape:
+            prompt_feats = prompt_feats.permute(0, 2, 1)
+            prompt_feats = prompt_feats.contiguous().reshape(B, C, H, W)
+
+            image_feats = image_feats.permute(0, 2, 1)
+            image_feats = image_feats.contiguous().reshape(B, C, H, W)
+
+        return image_feats, prompt_feats
+
+
 class PlainVitModel(nn.Module):
     @serialize
     def __init__(
@@ -119,7 +162,7 @@ class PlainVitModel(nn.Module):
         backbone_params={},
         neck_params={}, 
         head_params={},
-        fusion_type='naive',
+        fusion_params={},
         with_aux_output=False, 
         norm_radius=5, 
         use_disks=False, 
@@ -133,7 +176,6 @@ class PlainVitModel(nn.Module):
         self.with_aux_output = with_aux_output
         self.with_prev_mask = with_prev_mask
         self.normalization = BatchImageNormalize(norm_mean_std[0], norm_mean_std[1])
-        self.fusion_type = fusion_type
 
         self.coord_feature_ch = 2
         if self.with_prev_mask:
@@ -158,6 +200,13 @@ class PlainVitModel(nn.Module):
         self.neck = SimpleFPN(**neck_params)
         self.head = SegmentationHead(**head_params)
 
+        self.fusion_type = fusion_params['type']
+        if self.fusion_type == 'deep':
+            depth = int(fusion_params['depth'])
+            self.fusion_blocks = nn.Sequential(*[
+                CrossAttentionBlock(**fusion_params['params'])
+                for _ in range(depth)])
+
     def get_image_feats(self, image, keep_shape=True):
         image = self.normalization(image)
         image_feats = self.backbone(image, keep_shape=keep_shape)
@@ -179,13 +228,23 @@ class PlainVitModel(nn.Module):
             C_new = prompt_feats.shape[-1]
             H_new = image_shape[2] // self.prompts_patch_embed.patch_size[0]
             W_new = image_shape[3] // self.prompts_patch_embed.patch_size[1]
-            prompt_feats = prompt_feats.transpose(1,2).contiguous().reshape(B, C_new, H_new, W_new)
+
+            prompt_feats = prompt_feats.transpose(1,2).contiguous()
+            prompt_feats = prompt_feats.reshape(B, C_new, H_new, W_new)
 
         return prompt_feats
 
     def fusion(self, image_feats, prompt_feats):
         if self.fusion_type == 'naive':
             return image_feats + prompt_feats
+        
+        elif self.fusion_type == 'deep':
+            num_blocks = len(self.fusion_blocks)
+            for i in range(num_blocks):
+                image_feats, prompt_feats = self.fusion_blocks[i](
+                    image_feats, prompt_feats, keep_shape=True)
+            return image_feats
+
         else:
             raise ValueError('fusion type not defined')
 
