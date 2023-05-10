@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from mmcv.cnn import ConvModule
 
 from isegm.model.ops import DistMaps, BatchImageNormalize
-from isegm.model.modeling.models_vit import VisionTransformer, PatchEmbed
+from isegm.model.modeling.models_vit import VisionTransformer, PatchEmbed, Block
 from isegm.model.modeling.cross_attention import CrossBlock
 from isegm.utils.serialization import serialize
 
@@ -201,11 +201,19 @@ class PlainVitModel(nn.Module):
         self.head = SegmentationHead(**head_params)
 
         self.fusion_type = fusion_params['type']
-        if self.fusion_type == 'deep':
+
+        if self.fusion_type == 'cross_attention':
             depth = int(fusion_params['depth'])
             self.fusion_blocks = nn.Sequential(*[
                 CrossAttentionBlock(**fusion_params['params'])
                 for _ in range(depth)])
+            
+        elif self.fusion_type == 'self_attention':
+            depth = int(fusion_params['depth'])
+            self.fusion_blocks = nn.Sequential(*[
+                Block(**fusion_params['params'])
+                for _ in range(depth)])
+
 
     def get_image_feats(self, image, keep_shape=True):
         image = self.normalization(image)
@@ -238,11 +246,22 @@ class PlainVitModel(nn.Module):
         if self.fusion_type == 'naive':
             return image_feats + prompt_feats
         
-        elif self.fusion_type == 'deep':
+        elif self.fusion_type == 'cross_attention':
             num_blocks = len(self.fusion_blocks)
             for i in range(num_blocks):
                 image_feats, prompt_feats = self.fusion_blocks[i](
                     image_feats, prompt_feats, keep_shape=True)
+            return image_feats
+        
+        elif self.fusion_type == 'self_attention':
+            image_feats = image_feats + prompt_feats
+            B, C, H, W = image_feats.shape
+            image_feats = image_feats.permute(0, 2, 3, 1).contiguous().reshape(B, H*W, C)
+
+            num_blocks = len(self.fusion_blocks)
+            for i in range(num_blocks):
+                image_feats = self.fusion_blocks[i](image_feats)            
+            image_feats = image_feats.transpose(1, 2).contiguous().reshape(B, C, H, W)
             return image_feats
 
         else:

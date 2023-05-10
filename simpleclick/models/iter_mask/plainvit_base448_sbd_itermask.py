@@ -40,8 +40,8 @@ def init_model(cfg):
     )
 
     fusion_params = dict(
-        type='deep',
-        depth=2,
+        type='self_attention',
+        depth=4,
         params=dict(
             dim=768,
             num_heads=12,
