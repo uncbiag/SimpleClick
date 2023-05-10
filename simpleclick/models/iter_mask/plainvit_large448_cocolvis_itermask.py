@@ -108,7 +108,7 @@ def train(model, cfg, model_cfg):
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
                            milestones=[50, 55], gamma=0.1)
-    trainer = ISTrainer(model, cfg, model_cfg, loss_cfg,
+    trainer = ISTrainer(model, cfg, loss_cfg,
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,

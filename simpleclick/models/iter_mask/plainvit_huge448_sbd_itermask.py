@@ -12,6 +12,7 @@ def init_model(cfg):
     model_cfg = edict()
     model_cfg.crop_size = (448, 448)
     model_cfg.num_max_points = 24
+    model_cfg.num_max_next_points = 3
 
     backbone_params = dict(
         img_size=model_cfg.crop_size,
@@ -38,13 +39,25 @@ def init_model(cfg):
         out_channels=256
     )
 
+    fusion_params = dict(
+        type='self_attention',
+        depth=4,
+        params=dict(
+            dim=1280,
+            num_heads=16,
+            mlp_ratio=4, 
+            qkv_bias=True,        
+        )
+    )
+
     model = PlainVitModel(
-        use_disks=True,
-        norm_radius=5,
-        with_prev_mask=True,
         backbone_params=backbone_params,
         neck_params=neck_params,
         head_params=head_params,
+        fusion_params=fusion_params,
+        use_disks=True,
+        norm_radius=5,
+        with_prev_mask=True,
     )
 
     model.backbone.init_weights_from_pretrained(cfg.MAE_PRETRAINED_MODELS.VIT_HUGE)
@@ -111,7 +124,7 @@ def train(model, cfg, model_cfg):
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
                            milestones=[50, 55], gamma=0.1)
-    trainer = ISTrainer(model, cfg, model_cfg, loss_cfg,
+    trainer = ISTrainer(model, cfg, loss_cfg,
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
