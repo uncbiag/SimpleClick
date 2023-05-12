@@ -20,8 +20,7 @@ from isegm.model.modeling.pos_embed import interpolate_pos_embed_inference
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('mode', choices=['NoBRS', 'RGB-BRS', 'DistMap-BRS',
-                                         'f-BRS-A', 'f-BRS-B', 'f-BRS-C'],
+    parser.add_argument('mode', choices=['NoBRS'],
                         help='')
 
     group_checkpoints = parser.add_mutually_exclusive_group(required=True)
@@ -33,7 +32,8 @@ def parse_args():
                                    help='The relative path to the experiment with checkpoints.'
                                         '(relative to cfg.EXPS_PATH)')
 
-    parser.add_argument('--datasets', type=str, default='GrabCut,Berkeley,DAVIS,PascalVOC,SBD,BraTS,ssTEM,OAIZIB,COCO_MVal,ADE20K',
+    parser.add_argument('--datasets', type=str, 
+                        default='GrabCut,Berkeley,DAVIS,PascalVOC,SBD,BraTS,ssTEM,OAIZIB,COCO_MVal,ADE20K',
                         help='List of datasets on which the model should be tested. '
                              'Datasets are separated by a comma. Possible choices: '
                              'GrabCut, Berkeley, DAVIS, SBD, PascalVOC')
@@ -113,7 +113,6 @@ def main():
             interpolate_pos_embed_inference(model.backbone, zoomin_params['target_size'], args.device)
 
             predictor = get_predictor(model, args.mode, args.device,
-                                      prob_thresh=args.thresh,
                                       predictor_params=predictor_params,
                                       zoom_in_params=zoomin_params)
 

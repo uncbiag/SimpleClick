@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torchvision import transforms
+
 from isegm.inference.transforms import AddHorizontalFlip, SigmoidForPred, LimitLongestSide
 
 
@@ -20,18 +21,17 @@ class BasePredictor(object):
         self.model_indx = 0
         self.click_models = None
         self.net_state_dict = None
-
-        if isinstance(model, tuple):
-            self.net, self.click_models = model
-        else:
-            self.net = model
+        self.net = model
 
         self.to_tensor = transforms.ToTensor()
 
         self.transforms = [zoom_in] if zoom_in is not None else []
+
         if max_size is not None:
             self.transforms.append(LimitLongestSide(max_size=max_size))
+
         self.transforms.append(SigmoidForPred())
+
         if with_flip:
             self.transforms.append(AddHorizontalFlip())
 
