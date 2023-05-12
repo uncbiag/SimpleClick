@@ -20,8 +20,7 @@ from isegm.model.modeling.pos_embed import interpolate_pos_embed_inference
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('mode', choices=['NoBRS', 'RGB-BRS', 'DistMap-BRS',
-                                         'f-BRS-A', 'f-BRS-B', 'f-BRS-C'],
+    parser.add_argument('mode', choices=['NoBRS'],
                         help='')
 
     group_checkpoints = parser.add_mutually_exclusive_group(required=True)
@@ -33,7 +32,8 @@ def parse_args():
                                    help='The relative path to the experiment with checkpoints.'
                                         '(relative to cfg.EXPS_PATH)')
 
-    parser.add_argument('--datasets', type=str, default='GrabCut,Berkeley,DAVIS,PascalVOC,SBD,BraTS,ssTEM,OAIZIB,COCO_MVal,ADE20K',
+    parser.add_argument('--datasets', type=str, 
+                        default='GrabCut,Berkeley,DAVIS,PascalVOC,SBD,BraTS,ssTEM,OAIZIB,COCO_MVal,ADE20K',
                         help='List of datasets on which the model should be tested. '
                              'Datasets are separated by a comma. Possible choices: '
                              'GrabCut, Berkeley, DAVIS, SBD, PascalVOC')
@@ -101,6 +101,7 @@ def main():
     single_model_eval = len(checkpoints_list) == 1
     assert not args.iou_analysis if not single_model_eval else True, \
         "Can't perform IoU analysis for multiple checkpoints"
+    
     print_header = single_model_eval
     for dataset_name in args.datasets.split(','):
         dataset = utils.get_dataset(dataset_name, cfg)
@@ -108,17 +109,21 @@ def main():
         for checkpoint_path in checkpoints_list:
             model = utils.load_is_model(checkpoint_path, args.device)
 
-            predictor_params, zoomin_params = get_predictor_and_zoomin_params(args, dataset_name)
-
-            interpolate_pos_embed_inference(model.backbone, zoomin_params['target_size'], args.device)
-
+            zoomin_params = get_zoomin_params(args, dataset_name)
+ 
+            interpolate_pos_embed_inference(model.backbone, 
+                                            zoomin_params['target_size'], 
+                                            args.device)
+            
             predictor = get_predictor(model, args.mode, args.device,
-                                      prob_thresh=args.thresh,
-                                      predictor_params=predictor_params,
+                                      with_flip=True,
                                       zoom_in_params=zoomin_params)
 
-            vis_callback = get_prediction_vis_callback(logs_path, dataset_name, args.thresh) if args.vis_preds else None
-            dataset_results = evaluate_dataset(dataset, predictor, pred_thr=args.thresh,
+            vis_callback = get_prediction_vis_callback(
+                logs_path, dataset_name, args.thresh) if args.vis_preds else None
+
+            dataset_results = evaluate_dataset(dataset, predictor, 
+                                               pred_thr=args.thresh,
                                                max_iou_thr=args.target_iou,
                                                min_clicks=args.min_n_clicks,
                                                max_clicks=args.n_clicks,
@@ -141,13 +146,7 @@ def main():
     # print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
     # print("torch.cuda.max_memory_reserved: %fGB"%(torch.cuda.max_memory_reserved(0)/1024/1024/1024))
 
-def get_predictor_and_zoomin_params(args, dataset_name, apply_zoom_in=True):
-    predictor_params = {}
-
-    if args.clicks_limit is not None:
-        if args.clicks_limit == -1:
-            args.clicks_limit = args.n_clicks
-        predictor_params['net_clicks_limit'] = args.clicks_limit
+def get_zoomin_params(args, dataset_name, apply_zoom_in=True):
 
     zoom_in_params = None
 
@@ -170,7 +169,7 @@ def get_predictor_and_zoomin_params(args, dataset_name, apply_zoom_in=True):
         else:
             raise NotImplementedError
 
-    return predictor_params, zoom_in_params
+    return zoom_in_params
 
 
 def get_checkpoints_list_and_logs_path(args, cfg):
