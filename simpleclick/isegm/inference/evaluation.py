@@ -1,16 +1,10 @@
-from time import time
-
 import numpy as np
+from time import time
+from tqdm import tqdm
 import torch
 
 from isegm.inference import utils
 from isegm.inference.clicker import Clicker
-
-try:
-    get_ipython()
-    from tqdm import tqdm_notebook as tqdm
-except NameError:
-    from tqdm import tqdm
 
 
 def evaluate_dataset(dataset, predictor, **kwargs):
