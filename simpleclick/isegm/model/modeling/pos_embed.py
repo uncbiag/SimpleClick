@@ -94,7 +94,7 @@ def interpolate_pos_embed_train(model, pretrained_model):
 
 
 # We need this interpolation during inference because the image size for inference 
-# (e.g., 448x448) may be different than the image size for training (e.g., 1024x1024).
+# (e.g., 1024x1024) may be different than the image size for training (e.g., 448x448).
 def interpolate_pos_embed_inference(model, infer_img_size, device):    
     pos_embed = model.pos_embed
     embedding_size = pos_embed.shape[-1]
