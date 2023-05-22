@@ -7,8 +7,7 @@ from isegm.inference.transforms import AddHorizontalFlip, SigmoidForPred, \
 
 
 class BasePredictor(object):
-    def __init__(self, model, device, with_flip=False, zoomin_params={}, 
-                 max_size=None):
+    def __init__(self, model, device, zoomin_params, with_flip, max_size=None):
         
         self.net = model
         self.original_image = None
