@@ -99,13 +99,6 @@ class ZoomIn(BaseTransform):
                 return True
         return False
 
-    def get_state(self):
-        roi_image = self._roi_image.cpu() if self._roi_image is not None else None
-        return self._input_image_shape, self._object_roi, self._prev_probs, roi_image, self.image_changed
-
-    def set_state(self, state):
-        self._input_image_shape, self._object_roi, self._prev_probs, self._roi_image, self.image_changed = state
-
     def reset(self):
         self._input_image_shape = None
         self._object_roi = None
@@ -158,8 +151,8 @@ def get_roi_image_nd(image_nd, object_roi, target_size):
 
     with torch.no_grad():
         roi_image_nd = image_nd[:, :, rmin:rmax + 1, cmin:cmax + 1]
-        roi_image_nd = torch.nn.functional.interpolate(roi_image_nd, size=(new_height, new_width),
-                                                       mode='bilinear', align_corners=True)
+        roi_image_nd = torch.nn.functional.interpolate(roi_image_nd, 
+            size=(new_height, new_width), mode='bilinear', align_corners=True)
 
     return roi_image_nd
 

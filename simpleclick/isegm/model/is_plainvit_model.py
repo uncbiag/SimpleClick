@@ -214,7 +214,6 @@ class PlainVitModel(nn.Module):
                 Block(**fusion_params['params'])
                 for _ in range(depth)])
 
-
     def get_image_feats(self, image, keep_shape=True):
         image = self.normalization(image)
         image_feats = self.backbone(image, keep_shape=keep_shape)

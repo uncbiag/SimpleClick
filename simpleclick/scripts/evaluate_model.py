@@ -7,21 +7,17 @@ import cv2
 import torch
 import numpy as np
 
-
 sys.path.insert(0, '.')
 from isegm.inference import utils
 from isegm.utils.exp import load_config_file
 from isegm.utils.vis import draw_probmap, draw_with_blend_and_clicks
-from isegm.inference.predictors import get_predictor
+from isegm.inference.predictors.base import BasePredictor
 from isegm.inference.evaluation import evaluate_dataset
 from isegm.model.modeling.pos_embed import interpolate_pos_embed_inference
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-
-    parser.add_argument('mode', choices=['NoBRS'],
-                        help='')
 
     group_checkpoints = parser.add_mutually_exclusive_group(required=True)
     group_checkpoints.add_argument('--checkpoint', type=str, default='',
@@ -109,15 +105,14 @@ def main():
         for checkpoint_path in checkpoints_list:
             model = utils.load_is_model(checkpoint_path, args.device)
 
-            zoomin_params = get_zoomin_params(args, dataset_name)
+            zoomin_params = get_zoomin_params(args, dataset_name, apply_zoom_in=True)
  
             interpolate_pos_embed_inference(model.backbone, 
                                             zoomin_params['target_size'], 
                                             args.device)
             
-            predictor = get_predictor(model, args.mode, args.device,
-                                      with_flip=True,
-                                      zoom_in_params=zoomin_params)
+            predictor = BasePredictor(model, args.device, zoomin_params=zoomin_params,
+                                      with_flip=True)
 
             vis_callback = get_prediction_vis_callback(
                 logs_path, dataset_name, args.thresh) if args.vis_preds else None
@@ -129,13 +124,13 @@ def main():
                                                max_clicks=args.n_clicks,
                                                callback=vis_callback)
 
-            row_name = args.mode if single_model_eval else checkpoint_path.stem
             if args.iou_analysis:
                 save_iou_analysis_data(args, dataset_name, logs_path,
                                        logs_prefix, dataset_results,
                                        model_name=args.model_name)
 
-            save_results(args, row_name, dataset_name, logs_path, logs_prefix, dataset_results,
+            save_results(args, dataset_name, logs_path, logs_prefix, 
+                         dataset_results, 
                          save_ious=single_model_eval and args.save_ious,
                          single_model_eval=single_model_eval,
                          print_header=print_header)
@@ -146,7 +141,7 @@ def main():
     # print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
     # print("torch.cuda.max_memory_reserved: %fGB"%(torch.cuda.max_memory_reserved(0)/1024/1024/1024))
 
-def get_zoomin_params(args, dataset_name, apply_zoom_in=True):
+def get_zoomin_params(args, dataset_name, apply_zoom_in=False):
 
     zoom_in_params = None
 
@@ -162,6 +157,7 @@ def get_zoomin_params(args, dataset_name, apply_zoom_in=True):
             crop_size_w = crop_size_h
             if len(crop_size) == 2:
                 crop_size_w = int(crop_size[1])
+
             zoom_in_params = {
                 'skip_clicks': -1,
                 'target_size': (crop_size_h, crop_size_w)
@@ -203,7 +199,7 @@ def get_checkpoints_list_and_logs_path(args, cfg):
     return checkpoints_list, logs_path, logs_prefix
 
 
-def save_results(args, row_name, dataset_name, logs_path, logs_prefix, dataset_results,
+def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
                  save_ious=False, print_header=True, single_model_eval=False):
     all_ious, elapsed_time = dataset_results
     mean_spc, mean_spi = utils.get_time_metrics(all_ious, elapsed_time)
@@ -213,7 +209,7 @@ def save_results(args, row_name, dataset_name, logs_path, logs_prefix, dataset_r
 
     # print(noc_list, noc_list_std)
 
-    row_name = 'last' if row_name == 'last_checkpoint' else row_name
+    row_name = 'base'
     model_name = str(logs_path.relative_to(args.logs_path)) + ':' + logs_prefix if logs_prefix else logs_path.stem
     header, table_row = utils.get_results_table(noc_list, over_max_list, row_name, dataset_name,
                                                 mean_spc, elapsed_time, args.n_clicks,
@@ -249,7 +245,7 @@ def save_results(args, row_name, dataset_name, logs_path, logs_prefix, dataset_r
         if not single_model_eval:
             name_prefix += f'{dataset_name}_'
 
-    log_path = logs_path / f'{name_prefix}{args.eval_mode}_{args.mode}_{args.n_clicks}.txt'
+    log_path = logs_path / f'{name_prefix}{args.eval_mode}_{args.n_clicks}.txt'
     if log_path.exists():
         with open(log_path, 'a') as f:
             f.write(table_row + '\n')
@@ -270,12 +266,12 @@ def save_iou_analysis_data(args, dataset_name, logs_path, logs_prefix, dataset_r
     if model_name is None:
         model_name = str(logs_path.relative_to(args.logs_path)) + ':' + logs_prefix if logs_prefix else logs_path.stem
 
-    pkl_path = logs_path / f'plots/{name_prefix}{args.eval_mode}_{args.mode}_{args.n_clicks}.pickle'
+    pkl_path = logs_path / f'plots/{name_prefix}{args.eval_mode}_{args.n_clicks}.pickle'
     pkl_path.parent.mkdir(parents=True, exist_ok=True)
     with pkl_path.open('wb') as f:
         pickle.dump({
             'dataset_name': dataset_name,
-            'model_name': f'{model_name}_{args.mode}',
+            'model_name': f'{model_name}',
             'all_ious': all_ious
         }, f)
 
