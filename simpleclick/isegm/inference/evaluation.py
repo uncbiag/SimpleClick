@@ -3,7 +3,7 @@ from time import time
 from tqdm import tqdm
 import torch
 
-from isegm.inference import utils
+from isegm.inference.utils import get_iou
 from isegm.inference.clicker import Clicker
 
 
@@ -42,7 +42,7 @@ def evaluate_sample(image, gt_mask, predictor, max_iou_thr,
             if callback is not None:
                 callback(image, gt_mask, pred_probs, sample_id, click_indx, clicker.clicks_list)
 
-            iou = utils.get_iou(gt_mask, pred_mask)
+            iou = get_iou(gt_mask, pred_mask)
             ious_list.append(iou)
 
             if iou >= max_iou_thr and click_indx + 1 >= min_clicks:
