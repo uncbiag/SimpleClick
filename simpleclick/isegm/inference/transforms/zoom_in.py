@@ -42,7 +42,8 @@ class ZoomIn(BaseTransform):
             current_pred_mask = (self._prev_probs > self.prob_thresh)[0, 0]
             if current_pred_mask.sum() > 0:
                 current_object_roi = get_object_roi(current_pred_mask, clicks_list,
-                                                    self.expansion_ratio, self.min_crop_size)
+                                                    self.expansion_ratio, 
+                                                    self.min_crop_size)
 
         if current_object_roi is None:
             if self.skip_clicks >= 0:

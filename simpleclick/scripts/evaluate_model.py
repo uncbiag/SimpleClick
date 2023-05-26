@@ -106,7 +106,8 @@ def main():
             if args.vis_preds else None
 
         for checkpoint_path in ckpt_list:
-            model = utils.load_is_model(checkpoint_path, args.device) 
+            model = utils.load_is_model(checkpoint_path, args.device)
+            
             zoomin_params = get_zoomin_params(args, dataset_name, apply_zoom_in=True)
             interpolate_pos_embed_inference(model.backbone, 
                                             zoomin_params['target_size'], 
