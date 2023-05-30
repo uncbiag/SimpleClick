@@ -91,10 +91,10 @@ def parse_args():
 def main():
     args, cfg = parse_args()
 
-    checkpoints_list, logs_path, logs_prefix = get_checkpoints_list_and_logs_path(args, cfg)
+    ckpt_list, logs_path, logs_prefix = get_checkpoints_list_and_logs_path(args, cfg)
     logs_path.mkdir(parents=True, exist_ok=True)
 
-    single_model_eval = len(checkpoints_list) == 1
+    single_model_eval = len(ckpt_list) == 1
     assert not args.iou_analysis if not single_model_eval else True, \
         "Can't perform IoU analysis for multiple checkpoints"
     
@@ -102,21 +102,18 @@ def main():
     for dataset_name in args.datasets.split(','):
         dataset = utils.get_dataset(dataset_name, cfg)
 
-        for checkpoint_path in checkpoints_list:
-            model = utils.load_is_model(checkpoint_path, args.device)
+        vis_callback = get_vis_callback(logs_path, dataset_name, args.thresh) \
+            if args.vis_preds else None
 
+        for checkpoint_path in ckpt_list:
+            model = utils.load_is_model(checkpoint_path, args.device)
+            
             zoomin_params = get_zoomin_params(args, dataset_name, apply_zoom_in=True)
- 
             interpolate_pos_embed_inference(model.backbone, 
                                             zoomin_params['target_size'], 
                                             args.device)
             
-            predictor = BasePredictor(model, args.device, zoomin_params=zoomin_params,
-                                      with_flip=True)
-
-            vis_callback = get_prediction_vis_callback(
-                logs_path, dataset_name, args.thresh) if args.vis_preds else None
-
+            predictor = BasePredictor(model, args.device, zoomin_params, True)
             dataset_results = evaluate_dataset(dataset, predictor, 
                                                pred_thr=args.thresh,
                                                max_iou_thr=args.target_iou,
@@ -276,7 +273,7 @@ def save_iou_analysis_data(args, dataset_name, logs_path, logs_prefix, dataset_r
         }, f)
 
 
-def get_prediction_vis_callback(logs_path, dataset_name, prob_thresh):
+def get_vis_callback(logs_path, dataset_name, prob_thresh):
     save_path = logs_path / 'predictions_vis' / dataset_name
     save_path.mkdir(parents=True, exist_ok=True)
 
