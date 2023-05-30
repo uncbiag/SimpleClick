@@ -1,6 +1,7 @@
 # Models
-weights/
+*.pth
 results/
+simpleclick/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
