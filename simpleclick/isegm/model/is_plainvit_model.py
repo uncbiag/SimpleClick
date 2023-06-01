@@ -222,11 +222,10 @@ class PlainVitModel(nn.Module):
 
     def get_prompt_feats(self, image_shape, prompts, keep_shape=True):
         points = prompts['points']
-        prompt_maps = self.dist_maps(image_shape, points)
+        points_maps = self.dist_maps(image_shape, points)
 
         prev_mask = prompts['prev_mask']
-        if prev_mask is not None:
-            prompt_maps = torch.cat((prev_mask, prompt_maps), dim=1) 
+        prompt_maps = torch.cat((prev_mask, points_maps), dim=1) 
 
         prompt_feats = self.prompts_patch_embed(prompt_maps)
 
@@ -279,3 +278,7 @@ class PlainVitModel(nn.Module):
         )
 
         return {'instances': seg_prob, 'instances_aux': None}
+    
+    @property
+    def device(self):
+        return next(self.parameters()).device

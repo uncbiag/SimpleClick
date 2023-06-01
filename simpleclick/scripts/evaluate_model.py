@@ -11,7 +11,7 @@ sys.path.insert(0, '.')
 from isegm.inference import utils
 from isegm.utils.exp import load_config_file
 from isegm.utils.vis import draw_probmap, draw_with_blend_and_clicks
-from isegm.inference.predictors.base import BasePredictor
+from isegm.inference.predictor import BasePredictor
 from isegm.inference.evaluation import evaluate_dataset
 from isegm.model.modeling.pos_embed import interpolate_pos_embed_inference
 
@@ -90,6 +90,7 @@ def parse_args():
 
 def main():
     args, cfg = parse_args()
+    image_size = (1024, 1024)
 
     ckpt_list, logs_path, logs_prefix = get_checkpoints_list_and_logs_path(args, cfg)
     logs_path.mkdir(parents=True, exist_ok=True)
@@ -106,14 +107,10 @@ def main():
             if args.vis_preds else None
 
         for checkpoint_path in ckpt_list:
-            model = utils.load_is_model(checkpoint_path, args.device)
+            model = utils.load_is_model(checkpoint_path, args.device)            
+            interpolate_pos_embed_inference(model.backbone, image_size, args.device)
             
-            zoomin_params = get_zoomin_params(args, dataset_name, apply_zoom_in=True)
-            interpolate_pos_embed_inference(model.backbone, 
-                                            zoomin_params['target_size'], 
-                                            args.device)
-            
-            predictor = BasePredictor(model, args.device, zoomin_params, True)
+            predictor = BasePredictor(model)
             dataset_results = evaluate_dataset(dataset, predictor, 
                                                pred_thr=args.thresh,
                                                max_iou_thr=args.target_iou,
