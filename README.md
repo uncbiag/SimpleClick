@@ -1,17 +1,11 @@
-# SimpleClick: Interactive Image Segmentation, Editing, and Generation using Vision Transformers
+# SimpleClick: Interactive Image Segmentation with Simple Vision Transformers
 
 ## Introduction
-We aim to develop SimpleClick as a practical tool for interactive image segmentation, editing, and generation. To reproduce results of our published papers, please refer to the following branches.
+This codebase contains the PyTorch implementation of our work [SimpleClick: Interactive Image Segmentation with Simple Vision Transformers](https://arxiv.org/pdf/2210.11006.pdf). Please check out the branch below for your needs.
 
 ## Branches
-
-> \[[v1.0](https://github.com/uncbiag/SimpleClick/tree/v1.0)] Implementation of our paper "SimpleClick: Interactive Image Segmentation with Simple Vision Transformers" (arXiV'22) [[PDF](https://arxiv.org/pdf/2210.11006.pdf)]. This branch only supports interactive image segmentation. 
-
-## Features
-- [x] Interactive Image Segmentation
-- [ ] Universal Image Segmentation
-- [ ] Image Editing
-- [ ] Image Generation
+> \[[v2.0](https://github.com/uncbiag/SimpleClick/tree/v2.0)] Code refactoring of v1.0 (in progress).
+> \[[v1.0](https://github.com/uncbiag/SimpleClick/tree/v1.0)] Implementation of "SimpleClick: Interactive Image Segmentation with Simple Vision Transformers" (arXiv'22) [[PDF](https://arxiv.org/pdf/2210.11006.pdf)]. 
 
 ## License
 The code is released under the MIT License. It is a short, permissive software license. Basically, you can do whatever you want as long as you include the original copyright and license notice in any copy of the software/source. 
