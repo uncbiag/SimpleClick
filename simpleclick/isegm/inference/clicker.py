@@ -3,8 +3,42 @@ from copy import deepcopy
 import cv2
 
 
+class Click:
+    def __init__(
+            self, 
+            is_positive, 
+            coords, 
+            indx=None
+        ) -> None:
+        """
+        TBD
+        """
+        self.is_positive = is_positive
+        self.coords = coords
+        self.indx = indx
+
+    def copy(self, **kwargs):
+        self_copy = deepcopy(self)
+        for k, v in kwargs.items():
+            setattr(self_copy, k, v)
+        return self_copy
+
+    @property
+    def coords_and_indx(self):
+        return (*self.coords, self.indx)
+
+
 class Clicker(object):
-    def __init__(self, gt_mask=None, init_clicks=None, ignore_label=-1, click_indx_offset=0):
+    def __init__(
+            self, 
+            gt_mask=None, 
+            init_clicks=None, 
+            ignore_label=-1, 
+            click_indx_offset=0
+    ) -> None:
+        """
+        TBD
+        """
         self.click_indx_offset = click_indx_offset
         if gt_mask is not None:
             self.gt_mask = gt_mask == 1
@@ -18,15 +52,31 @@ class Clicker(object):
             for click in init_clicks:
                 self.add_click(click)
 
-    def make_next_click(self, pred_mask):
+    def make_next_click(
+            self, 
+            pred_mask: np.ndarray,
+        ) -> None:
+        """
+        TBD
+        """
         assert self.gt_mask is not None
         click = self._get_next_click(pred_mask)
         self.add_click(click)
 
-    def get_clicks(self, clicks_limit=None):
+    def get_clicks(
+            self, 
+            clicks_limit=None
+        ):
         return self.clicks_list[:clicks_limit]
 
-    def _get_next_click(self, pred_mask, padding=True):
+    def _get_next_click(
+            self, 
+            pred_mask, 
+            padding=True
+        ) -> Click:
+        """
+        TBD
+        """
         fn_mask = np.logical_and(np.logical_and(self.gt_mask, np.logical_not(pred_mask)), self.not_ignore_mask)
         fp_mask = np.logical_and(np.logical_and(np.logical_not(self.gt_mask), pred_mask), self.not_ignore_mask)
 
@@ -55,7 +105,12 @@ class Clicker(object):
 
         return Click(is_positive=is_positive, coords=(coords_y[0], coords_x[0]))
 
-    def add_click(self, click):
+    def add_click(
+            self, 
+            click: Click,
+        ) -> None:
+        """
+        """
         coords = click.coords
 
         click.indx = self.click_indx_offset + self.num_pos_clicks + self.num_neg_clicks
@@ -99,20 +154,3 @@ class Clicker(object):
 
     def __len__(self):
         return len(self.clicks_list)
-
-
-class Click:
-    def __init__(self, is_positive, coords, indx=None):
-        self.is_positive = is_positive
-        self.coords = coords
-        self.indx = indx
-
-    @property
-    def coords_and_indx(self):
-        return (*self.coords, self.indx)
-
-    def copy(self, **kwargs):
-        self_copy = deepcopy(self)
-        for k, v in kwargs.items():
-            setattr(self_copy, k, v)
-        return self_copy

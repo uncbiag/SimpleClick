@@ -46,15 +46,13 @@ def parse_args():
     group_iou_thresh.add_argument('--iou-analysis', action='store_true', default=False,
                                   help='Plot mIoU(number of clicks) with target_iou=1.0.')
 
-    parser.add_argument('--n-clicks', type=int, default=20,
+    parser.add_argument('--max-n-clicks', type=int, default=20,
                         help='Maximum number of clicks for the NoC metric.')
     parser.add_argument('--min-n-clicks', type=int, default=1,
                         help='Minimum number of clicks for the evaluation.')
     parser.add_argument('--thresh', type=float, required=False, default=0.49,
                         help='The segmentation mask is obtained from the probability outputs using this threshold.')
     parser.add_argument('--clicks-limit', type=int, default=None)
-    parser.add_argument('--eval-mode', type=str, default='cvpr',
-                        help="Possible choices: cvpr, fixed<number>, or fixed<number>,<number>,(e.g. fixed400, fixed400,600).")
 
     parser.add_argument('--save-ious', action='store_true', default=False)
     parser.add_argument('--print-ious', action='store_true', default=False)
@@ -103,63 +101,42 @@ def main():
     for dataset_name in args.datasets.split(','):
         dataset = utils.get_dataset(dataset_name, cfg)
 
-        vis_callback = get_vis_callback(logs_path, dataset_name, args.thresh) \
-            if args.vis_preds else None
+        vis_callback = get_vis_callback(
+            logs_path, dataset_name, args.thresh
+        ) if args.vis_preds else None
 
         for checkpoint_path in ckpt_list:
             model = utils.load_is_model(checkpoint_path, args.device)            
             interpolate_pos_embed_inference(model.backbone, image_size, args.device)
             
-            predictor = BasePredictor(model)
-            dataset_results = evaluate_dataset(dataset, predictor, 
-                                               pred_thr=args.thresh,
-                                               max_iou_thr=args.target_iou,
-                                               min_clicks=args.min_n_clicks,
-                                               max_clicks=args.n_clicks,
-                                               callback=vis_callback)
+            dataset_results = evaluate_dataset(
+                dataset=dataset, 
+                predictor=BasePredictor(model), 
+                pred_thr=args.thresh,
+                max_iou_thr=args.target_iou,
+                min_clicks=args.min_n_clicks,
+                max_clicks=args.max_n_clicks,
+                callback=vis_callback
+            )
 
             if args.iou_analysis:
-                save_iou_analysis_data(args, dataset_name, logs_path,
-                                       logs_prefix, dataset_results,
-                                       model_name=args.model_name)
+                save_iou_analysis_data(
+                    args, dataset_name, logs_path, logs_prefix, dataset_results,
+                    model_name=args.model_name
+                )
 
-            save_results(args, dataset_name, logs_path, logs_prefix, 
-                         dataset_results, 
-                         save_ious=single_model_eval and args.save_ious,
-                         single_model_eval=single_model_eval,
-                         print_header=print_header)
+            save_results(
+                args, dataset_name, logs_path, logs_prefix, dataset_results, 
+                save_ious=single_model_eval and args.save_ious,
+                single_model_eval=single_model_eval, 
+                print_header=print_header
+            )
             print_header = False
 
     # # uncomment the following lines for GPU memory analysis
     # print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
     # print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
     # print("torch.cuda.max_memory_reserved: %fGB"%(torch.cuda.max_memory_reserved(0)/1024/1024/1024))
-
-def get_zoomin_params(args, dataset_name, apply_zoom_in=False):
-
-    zoom_in_params = None
-
-    if apply_zoom_in:
-        if args.eval_mode == 'cvpr':
-            zoom_in_params = {
-                'skip_clicks': -1,
-                'target_size': (672, 672) if dataset_name == 'DAVIS' else (448, 448)
-            }
-        elif args.eval_mode.startswith('fixed'):
-            crop_size = args.eval_mode.split(',')
-            crop_size_h = int(crop_size[0][5:])
-            crop_size_w = crop_size_h
-            if len(crop_size) == 2:
-                crop_size_w = int(crop_size[1])
-
-            zoom_in_params = {
-                'skip_clicks': -1,
-                'target_size': (crop_size_h, crop_size_w)
-            }
-        else:
-            raise NotImplementedError
-
-    return zoom_in_params
 
 
 def get_checkpoints_list_and_logs_path(args, cfg):
@@ -250,15 +227,29 @@ def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
             f.write(table_row + '\n')
 
 
-def save_iou_analysis_data(args, dataset_name, logs_path, logs_prefix, dataset_results, model_name=None):
+def save_iou_analysis_data(
+        args, 
+        dataset_name, 
+        logs_path, 
+        logs_prefix, 
+        dataset_results, 
+        model_name=None
+    ) -> None:
+    """
+    TBD
+    """
     all_ious, _ = dataset_results
 
     name_prefix = ''
     if logs_prefix:
         name_prefix = logs_prefix + '_'
     name_prefix += dataset_name + '_'
+
     if model_name is None:
-        model_name = str(logs_path.relative_to(args.logs_path)) + ':' + logs_prefix if logs_prefix else logs_path.stem
+        if logs_prefix:
+            model_name = str(logs_path.relative_to(args.logs_path)) + ':' + logs_prefix
+        else: 
+            model_name = logs_path.stem
 
     pkl_path = logs_path / f'plots/{name_prefix}{args.eval_mode}_{args.n_clicks}.pickle'
     pkl_path.parent.mkdir(parents=True, exist_ok=True)

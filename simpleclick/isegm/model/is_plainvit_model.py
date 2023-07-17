@@ -280,5 +280,5 @@ class PlainVitModel(nn.Module):
         return {'instances': seg_prob, 'instances_aux': None}
     
     @property
-    def device(self):
+    def device(self) -> torch.device:
         return next(self.parameters()).device

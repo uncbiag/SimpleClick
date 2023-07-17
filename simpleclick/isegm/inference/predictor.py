@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torchvision import transforms
 
 from isegm.model.is_plainvit_model import PlainVitModel
+from isegm.inference.clicker import Clicker
 from isegm.inference.transform import ResizeLongestSide
 
 
@@ -35,27 +36,30 @@ class BasePredictor(object):
         if len(self.image.shape) == 3:
             # CHW -> BCHW
             self.image = self.image.unsqueeze(0)
-
+        self.orig_h, self.orig_w = self.image.shape[2:]
         
-
+        self.image = self.transform.apply_image_torch(self.image)
         self.image_feats = self.model.get_image_feats(self.image)
         self.prev_mask = torch.zeros_like(self.image[:, :1, :, :])
 
-    def get_prediction(self, clicker):
+    def predict(
+            self, 
+            clicker: Clicker,
+        ) -> np.ndarray:
+        """
+        TBD
+        """
         clicks_list = clicker.get_clicks()
+        points_nd = self.get_points_nd([clicks_list])
 
-        pred_logits = self._get_prediction(self.image_feats, [clicks_list])
+        prompts = {'points': points_nd, 'prev_mask': self.prev_mask}
+        prompt_feats = self.model.get_prompt_feats(self.image.shape, prompts)
+        pred_logits = self.model(self.image.shape, self.image_feats, prompt_feats)['instances']
+ 
         prediction = torch.sigmoid(pred_logits)
         self.prev_mask = prediction
 
         return prediction.cpu().numpy()[0, 0]
-
-    def _get_prediction(self, image_feats, clicks_lists):
-        points_nd = self.get_points_nd(clicks_lists)
-        prompts = {'points': points_nd, 'prev_mask': self.prev_mask}
-        prompt_feats = self.model.get_prompt_feats(self.image.shape, prompts)
-
-        return self.model(self.image.shape, image_feats, prompt_feats)['instances']
 
     def get_points_nd(self, clicks_lists):
         total_clicks = []
