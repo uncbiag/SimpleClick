@@ -36,7 +36,7 @@ An example script to run the demo.
 ```
 python3 demo.py --checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth --gpu 0
 ```
-Some test images can be found [here](https://github.com/uncbiag/SimpleClick/tree/main/assets/test_imgs).
+Some test images can be found [here](https://github.com/uncbiag/SimpleClick/tree/v1.0/assets/test_imgs).
 
 ## Evaluation
 Before evaluation, please download the datasets and models, and then configure the path in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml).
