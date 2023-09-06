@@ -23,7 +23,7 @@ Training and evaluation environment: Python3.8.8, PyTorch 1.11.0, Ubuntu 20.4, C
 ```
 pip3 install -r requirements.txt
 ```
-You can build a container with the configured environment using our [Dockerfiles](https://github.com/uncbiag/SimpleClick/tree/main/docker). 
+You can build a container with the configured environment using our [Dockerfiles](https://github.com/uncbiag/SimpleClick/tree/v1.0/docker). 
 Our Dockerfiles only support CUDA 11.0/11.4/11.6. If you use different CUDA drivers, you need to modify the base image in the Dockerfile (This is annoying that you need a matched image in Dockerfile for your CUDA driver, otherwise the gpu doesn't work in the container. Any better solutions?).
 You also need to configue the paths to the datasets in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml) before training or testing.
 
@@ -39,7 +39,7 @@ python3 demo.py --checkpoint=./weights/simpleclick_models/cocolvis_vit_huge.pth 
 Some test images can be found [here](https://github.com/uncbiag/SimpleClick/tree/v1.0/assets/test_imgs).
 
 ## Evaluation
-Before evaluation, please download the datasets and models, and then configure the path in [config.yml](https://github.com/uncbiag/SimpleClick/blob/main/config.yml).
+Before evaluation, please download the datasets and models, and then configure the path in [config.yml](https://github.com/uncbiag/SimpleClick/blob/v1.0/config.yml).
 
 Use the following code to evaluate the huge model.
 ```
