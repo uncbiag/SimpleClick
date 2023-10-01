@@ -224,6 +224,9 @@ class PlainVitModel(nn.Module):
         points = prompts['points']
         points_maps = self.dist_maps(image_shape, points)
 
+        # TODO: support more visual prompts such as scribbles, 
+        # bounding boxes, and masks
+
         prev_mask = prompts['prev_mask']
         prompt_maps = torch.cat((prev_mask, points_maps), dim=1) 
 
@@ -269,6 +272,8 @@ class PlainVitModel(nn.Module):
         fused_features = self.fusion(image_feats, prompt_feats)
         multiscale_features = self.neck(fused_features)
         seg_prob = self.head(multiscale_features)
+
+        # TODO: remove padded area
 
         seg_prob = nn.functional.interpolate(
             seg_prob, 

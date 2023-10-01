@@ -176,15 +176,20 @@ def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
     mean_spc, mean_spi = utils.get_time_metrics(all_ious, elapsed_time)
 
     iou_thrs = np.arange(0.8, min(0.95, args.target_iou) + 0.001, 0.05).tolist()
-    noc_list, noc_list_std, over_max_list = utils.compute_noc_metric(all_ious, iou_thrs=iou_thrs, max_clicks=args.n_clicks)
+    noc_list, noc_list_std, over_max_list = utils.compute_noc_metric(
+        all_ious, iou_thrs=iou_thrs, max_clicks=args.n_clicks
+    )
 
     # print(noc_list, noc_list_std)
 
     row_name = 'base'
-    model_name = str(logs_path.relative_to(args.logs_path)) + ':' + logs_prefix if logs_prefix else logs_path.stem
-    header, table_row = utils.get_results_table(noc_list, over_max_list, row_name, dataset_name,
-                                                mean_spc, elapsed_time, args.n_clicks,
-                                                model_name=model_name)
+    model_name = str(logs_path.relative_to(args.logs_path)) + \
+        ':' + logs_prefix if logs_prefix else logs_path.stem
+    header, table_row = utils.get_results_table(
+        noc_list, over_max_list, row_name, dataset_name,
+        mean_spc, elapsed_time, args.n_clicks,
+        model_name=model_name
+    )
 
     if args.print_ious:
         min_num_clicks = min(len(x) for x in all_ious)

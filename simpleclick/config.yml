@@ -1,5 +1,5 @@
 INTERACTIVE_MODELS_PATH: "./weights"
-EXPS_PATH: "/playpen-raid2/qinliu/models/model_0414_2023"
+EXPS_PATH: "/playpen-raid2/qinliu/models/model_0927_2023"
 
 # Evaluation datasets
 GRABCUT_PATH: "/playpen-raid2/qinliu/data/GrabCut"
@@ -16,7 +16,7 @@ HARD_PATH: "/playpen-raid2/qinliu/data/HARD"
 SBD_PATH: "/playpen-raid2/qinliu/data/SBD/dataset"
 COCO_PATH: "/playpen-raid2/qinliu/data/COCO_2017"
 LVIS_v1_PATH: "/playpen-raid2/qinliu/data/COCO_2017"
-OPENIMAGES_PATH: "./datasets/OpenImages"
+OPENIMAGES_PATH: "/playpen-raid2/qinliu/data/OpenImages"
 PASCALVOC_PATH: "/playpen-raid2/qinliu/data/PascalVOC"
 ADE20K_PATH: "/playpen-raid2/qinliu/data/ADE20k/ADEChallengeData2016"
 

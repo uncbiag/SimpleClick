@@ -10,30 +10,36 @@ import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
+from isegm.model.is_plainvit_model import PlainVitModel
 from isegm.utils.log import logger, TqdmToLogger, SummaryWriterAvg
 from isegm.utils.vis import draw_probmap, draw_points
 from isegm.utils.misc import save_checkpoint
 from isegm.utils.serialization import get_config_repr
 from isegm.utils.distributed import get_dp_wrapper, get_sampler, reduce_loss_dict
-from .optimizer import get_optimizer, get_optimizer_with_layerwise_decay
+from .optimizer import get_optimizer, get_optimizer_lrd
 
 
 class ISTrainer(object):
-    def __init__(self, model, cfg, loss_cfg,
-                 trainset, valset,
-                 optimizer='adam',
-                 optimizer_params=None,
-                 layerwise_decay=False,
-                 image_dump_interval=200,
-                 checkpoint_interval=10,
-                 tb_dump_period=25,
-                 max_interactive_points=0,
-                 lr_scheduler=None,
-                 metrics=None,
-                 additional_val_metrics=None,
-                 max_num_next_clicks=0,
-                 prev_mask_drop_prob=0.0,
-                ):
+    def __init__(
+            self, 
+            model: PlainVitModel, 
+            cfg, 
+            loss_cfg,
+            trainset, valset,
+            optimizer='adam',
+            optimizer_params=None,
+            layerwise_decay=False,
+            image_dump_interval=200,
+            checkpoint_interval=10,
+            tb_dump_period=25,
+            max_interactive_points=0,
+            lr_scheduler=None,
+            metrics=None,
+            additional_val_metrics=None,
+            max_num_next_clicks=0,
+            prev_mask_drop_prob=0.0,
+        ):
+
         self.cfg = cfg
         self.is_master = self.cfg.local_rank == 0
         self.max_interactive_points = max_interactive_points
@@ -57,7 +63,7 @@ class ISTrainer(object):
         self.checkpoint_interval = checkpoint_interval
         self.image_dump_interval = image_dump_interval
         self.task_prefix = ''
-        self.sw = None
+        self.sw = None # summary writter
 
         self.trainset = trainset
         self.valset = valset
@@ -82,8 +88,7 @@ class ISTrainer(object):
         )
 
         if layerwise_decay:
-            self.optim = get_optimizer_with_layerwise_decay(model, optimizer, 
-                                                            optimizer_params)
+            self.optim = get_optimizer_lrd(model, optimizer, optimizer_params)
         else:
             self.optim = get_optimizer(model, optimizer, optimizer_params)
         model = self._load_weights(model)
@@ -121,13 +126,16 @@ class ISTrainer(object):
 
     def training(self, epoch):
         if self.sw is None and self.is_master:
-            self.sw = SummaryWriterAvg(log_dir=str(self.cfg.LOGS_PATH),
-                                       flush_secs=10, dump_period=self.tb_dump_period)
+            self.sw = SummaryWriterAvg(
+                log_dir=str(self.cfg.LOGS_PATH),
+                flush_secs=10, 
+                dump_period=self.tb_dump_period
+            )
 
         self.train_data.sampler.set_epoch(epoch)
 
         log_prefix = 'Train' + self.task_prefix.capitalize()
-        tbar = tqdm(self.train_data, file=self.tqdm_out, ncols=100)\
+        tbar = tqdm(self.train_data, file=self.tqdm_out, ncols=100) \
             if self.is_master else self.train_data
 
         for metric in self.train_metrics:
@@ -157,15 +165,21 @@ class ISTrainer(object):
                                        global_step=global_step)
 
                 for k, v in self.loss_cfg.items():
-                    if '_loss' in k and hasattr(v, 'log_states') and self.loss_cfg.get(k + '_weight', 0.0) > 0:
+                    if '_loss' in k and hasattr(v, 'log_states') and \
+                        self.loss_cfg.get(k + '_weight', 0.0) > 0:
                         v.log_states(self.sw, f'{log_prefix}Losses/{k}', global_step)
 
-                if self.image_dump_interval > 0 and global_step % self.image_dump_interval == 0:
-                    self.save_visualization(splitted_batch_data, outputs, global_step, prefix='train')
+                if self.image_dump_interval > 0 and \
+                    global_step % self.image_dump_interval == 0:
+                    self.save_visualization(
+                        splitted_batch_data, outputs, global_step, prefix='train'
+                    )
 
-                self.sw.add_scalar(tag=f'{log_prefix}States/learning_rate',
-                                   value=self.lr if not hasattr(self, 'lr_scheduler') else self.lr_scheduler.get_lr()[-1],
-                                   global_step=global_step)
+                self.sw.add_scalar(
+                    tag=f'{log_prefix}States/learning_rate',
+                    value=self.lr if not hasattr(self, 'lr_scheduler') else self.lr_scheduler.get_lr()[-1],
+                    global_step=global_step
+                )
 
                 tbar.set_description(f'Epoch {epoch}, training loss {train_loss/(i+1):.4f}')
                 for metric in self.train_metrics:
@@ -222,15 +236,20 @@ class ISTrainer(object):
             if self.is_master:
                 tbar.set_description(f'Epoch {epoch}, validation loss: {val_loss/(i + 1):.4f}')
                 for metric in self.val_metrics:
-                    metric.log_states(self.sw, f'{log_prefix}Metrics/{metric.name}', global_step)
+                    metric.log_states(self.sw, f'{log_prefix}Metrics/{metric.name}',
+                                      global_step)
 
         if self.is_master:
             for loss_name, loss_values in losses_logging.items():
-                self.sw.add_scalar(tag=f'{log_prefix}Losses/{loss_name}', value=np.array(loss_values).mean(),
-                                   global_step=epoch, disable_avg=True)
+                self.sw.add_scalar(
+                    tag=f'{log_prefix}Losses/{loss_name}', 
+                    value=np.array(loss_values).mean(),
+                    global_step=epoch, disable_avg=True
+                )
 
             for metric in self.val_metrics:
-                self.sw.add_scalar(tag=f'{log_prefix}Metrics/{metric.name}', value=metric.get_epoch_value(),
+                self.sw.add_scalar(tag=f'{log_prefix}Metrics/{metric.name}', 
+                                   value=metric.get_epoch_value(),
                                    global_step=epoch, disable_avg=True)
 
     def batch_forward(self, batch_data, validation=False):
@@ -337,7 +356,10 @@ class ISTrainer(object):
 
         _save_image('instance_segmentation', viz_image[:, :, ::-1])
 
-    def _load_weights(self, net):
+    def _load_weights(
+            self, 
+            net: PlainVitModel
+        ) -> PlainVitModel:
         if self.cfg.weights is not None:
             if os.path.isfile(self.cfg.weights):
                 load_weights(net, self.cfg.weights)

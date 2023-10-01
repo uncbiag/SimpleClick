@@ -26,10 +26,11 @@ def get_optimizer(model, opt_name, opt_kwargs):
 
     return optimizer
 
-def get_optimizer_with_layerwise_decay(model, opt_name, opt_kwargs):
+def get_optimizer_lrd(model, opt_name, opt_kwargs):
     # build optimizer with layer-wise lr decay (lrd)
     lr = opt_kwargs['lr']
-    param_groups = lrd.param_groups_lrd(model, lr, weight_decay=0.02,
+    param_groups = lrd.param_groups_lrd(
+        model, lr, weight_decay=0.02,
         no_weight_decay_list=model.backbone.no_weight_decay(),
         layer_decay=0.75
     )

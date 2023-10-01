@@ -1,3 +1,4 @@
+
 from isegm.utils.exp_imports.default import *
 
 MODEL_NAME = 'sbd_plainvit_huge448'
