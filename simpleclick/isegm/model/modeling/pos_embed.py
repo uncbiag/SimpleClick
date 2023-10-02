@@ -69,7 +69,7 @@ def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
 
 # We need this interpolation during training because the pretrained model
 # may use different image size (e.g. 224x224) than that of training (e.g., 448x448).
-def interpolate_pos_embed_train(model, pretrained_model):
+def interpolate_pos_embed(model, pretrained_model) -> None: 
     if 'pos_embed' in pretrained_model:
         pos_embed_checkpoint = pretrained_model['pos_embed']
         embedding_size = pos_embed_checkpoint.shape[-1]
@@ -91,38 +91,3 @@ def interpolate_pos_embed_train(model, pretrained_model):
             pos_tokens = pos_tokens.permute(0, 2, 3, 1).flatten(1, 2)
             new_pos_embed = torch.cat((extra_tokens, pos_tokens), dim=1)
             pretrained_model['pos_embed'] = new_pos_embed
-
-
-# We need this interpolation during inference because the image size for inference 
-# (e.g., 1024x1024) may be different than the image size for training (e.g., 448x448).
-def interpolate_pos_embed_inference(model, infer_img_size, device):    
-    pos_embed = model.pos_embed
-    embedding_size = pos_embed.shape[-1]
-
-    patch_embed = model.patch_embed
-
-    num_patches = patch_embed.num_patches
-    num_extra_tokens = pos_embed.shape[-2] - num_patches
-    grid_size = patch_embed.grid_size
-
-    patch_size = patch_embed.patch_size
-    infer_grid_size = (infer_img_size[0] // patch_size[0], \
-        infer_img_size[1] // patch_size[1])
-
-    orig_size, new_size = grid_size, infer_grid_size
-    if orig_size != new_size:
-        # print("Position interpolate from %dx%d to %dx%d" % (orig_size[0], orig_size[1], 
-        #     new_size[0], new_size[1]))
-        extra_tokens = pos_embed[:, :num_extra_tokens]
-        # only the position tokens are interpolated
-        pos_tokens = pos_embed[:, num_extra_tokens:]
-        pos_tokens = pos_tokens.reshape(-1, orig_size[0], orig_size[1], embedding_size).permute(0, 3, 1, 2)
-        pos_tokens = torch.nn.functional.interpolate(
-            pos_tokens, size=new_size, mode='bicubic', align_corners=False)
-        pos_tokens = pos_tokens.permute(0, 2, 3, 1).flatten(1, 2)
-        new_pos_embed = torch.cat((extra_tokens, pos_tokens), dim=1)
-        new_pos_embed = torch.nn.Parameter(new_pos_embed).to(device)
-
-        model.pos_embed = new_pos_embed
-
-

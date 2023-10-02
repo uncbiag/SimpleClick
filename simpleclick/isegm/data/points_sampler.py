@@ -80,8 +80,10 @@ class MultiPointSampler(BasePointSampler):
         if len(sample) <= len(self._selected_masks):
             neg_mask_other = neg_mask_bg
         else:
-            neg_mask_other = np.logical_and(np.logical_not(sample.get_background_mask()),
-                                            np.logical_not(binary_gt_mask))
+            neg_mask_other = np.logical_and(
+                np.logical_not(sample.get_background_mask()),
+                np.logical_not(binary_gt_mask)
+            )
 
         self._neg_masks = {
             'bg': neg_mask_bg,

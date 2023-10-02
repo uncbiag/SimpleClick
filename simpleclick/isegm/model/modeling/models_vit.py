@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from functools import partial
-from .pos_embed import interpolate_pos_embed_train
+from .pos_embed import interpolate_pos_embed
 
 
 class Mlp(nn.Module):
@@ -141,7 +141,7 @@ class VisionTransformer(nn.Module):
             checkpoint_model = checkpoint['model']
 
             # interpolate position embedding
-            interpolate_pos_embed_train(self, checkpoint_model)
+            interpolate_pos_embed(self, checkpoint_model)
 
             # load pre-trained model
             msg = self.load_state_dict(checkpoint_model, strict=False)

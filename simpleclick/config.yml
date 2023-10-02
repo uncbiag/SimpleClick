@@ -22,7 +22,7 @@ ADE20K_PATH: "/playpen-raid2/qinliu/data/ADE20k/ADEChallengeData2016"
 
 # You can download the weights for HRNet from the repository:
 # https://github.com/HRNet/HRNet-Image-Classification
-IMAGENET_PRETRAINED_MODELS:
+IMAGENET_WEIGHTS:
   HRNETV2_W18: "./weights/pretrained/hrnetv2_w18_imagenet_pretrained.pth"
   HRNETV2_W32: "./weights/pretrained/hrnetv2_w32_imagenet_pretrained.pth"
   HRNETV2_W40: "./weights/pretrained/hrnetv2_w40_imagenet_pretrained.pth"
@@ -38,7 +38,7 @@ IMAGENET_PRETRAINED_MODELS:
   SWIN_BASE: "./weights/pretrained/swin_base_patch4_window12_384_22k.pth"
   SWIN_LARGE: "./weights/pretrained/swin_large_patch4_window12_384_22k.pth"
 
-MAE_PRETRAINED_MODELS:  
+MAE_WEIGHTS:  
   VIT_BASE: "./weights/pretrained/mae_pretrain_vit_base.pth"
   VIT_LARGE: "./weights/pretrained/mae_pretrain_vit_large.pth"
   VIT_HUGE: "./weights/pretrained/mae_pretrain_vit_huge.pth"

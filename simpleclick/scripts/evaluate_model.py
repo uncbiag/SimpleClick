@@ -13,7 +13,6 @@ from isegm.utils.exp import load_config_file
 from isegm.utils.vis import draw_probmap, draw_with_blend_and_clicks
 from isegm.inference.predictor import BasePredictor
 from isegm.inference.evaluation import evaluate_dataset
-from isegm.model.modeling.pos_embed import interpolate_pos_embed_inference
 
 
 def parse_args():
@@ -53,7 +52,6 @@ def parse_args():
     parser.add_argument('--thresh', type=float, required=False, default=0.49,
                         help='The segmentation mask is obtained from the probability outputs using this threshold.')
     parser.add_argument('--clicks-limit', type=int, default=None)
-
     parser.add_argument('--save-ious', action='store_true', default=False)
     parser.add_argument('--print-ious', action='store_true', default=False)
     parser.add_argument('--vis-preds', action='store_true', default=False)
@@ -88,8 +86,6 @@ def parse_args():
 
 def main():
     args, cfg = parse_args()
-    image_size = (1024, 1024)
-
     ckpt_list, logs_path, logs_prefix = get_checkpoints_list_and_logs_path(args, cfg)
     logs_path.mkdir(parents=True, exist_ok=True)
 
@@ -106,9 +102,7 @@ def main():
         ) if args.vis_preds else None
 
         for checkpoint_path in ckpt_list:
-            model = utils.load_is_model(checkpoint_path, args.device)            
-            interpolate_pos_embed_inference(model.backbone, image_size, args.device)
-            
+            model = utils.load_is_model(checkpoint_path, args.device)
             dataset_results = evaluate_dataset(
                 dataset=dataset, 
                 predictor=BasePredictor(model), 

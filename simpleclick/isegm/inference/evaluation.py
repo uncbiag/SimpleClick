@@ -22,7 +22,7 @@ def evaluate_dataset(dataset, predictor, **kwargs):
                 sample.gt_mask(object_id), 
                 predictor, 
                 sample_id=index, 
-                **kwargs
+                **kwargs,
             )
             all_ious.append(sample_ious)
     end_time = time()
@@ -32,16 +32,16 @@ def evaluate_dataset(dataset, predictor, **kwargs):
 
 
 def evaluate_sample(
-        image: np.ndarray, 
-        gt_mask: np.ndarray, 
-        predictor: BasePredictor, 
-        max_iou_thr: float,
-        pred_thr: float=0.49, 
-        min_clicks: int=1, 
-        max_clicks: int=20,
-        sample_id=None, 
-        callback=None
-    ) -> np.ndarray:
+    image: np.ndarray, 
+    gt_mask: np.ndarray, 
+    predictor: BasePredictor, 
+    max_iou_thr: float,
+    pred_thr: float=0.49, 
+    min_clicks: int=1, 
+    max_clicks: int=20,
+    sample_id=None, 
+    callback=None,
+) -> np.ndarray:
     """
     Evaluate a sample. 
     image: H x W x 3, uint8

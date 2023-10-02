@@ -169,10 +169,8 @@ class PlainVitModel(nn.Module):
         cpu_dist_maps=False, 
         with_prev_mask=False, 
         norm_mean_std=([.485, .456, .406], [.229, .224, .225])        
-        ):
-
+    ) -> None:
         super().__init__()
-
         self.with_aux_output = with_aux_output
         self.with_prev_mask = with_prev_mask
         self.normalization = BatchImageNormalize(norm_mean_std[0], norm_mean_std[1])
@@ -214,10 +212,25 @@ class PlainVitModel(nn.Module):
                 Block(**fusion_params['params'])
                 for _ in range(depth)])
 
-    def get_image_feats(self, image, keep_shape=True):
+    def preprocess(self, image: torch.Tensor, encoder_size: int=1024) -> torch.Tensor:
+        """Normalize pixel values and pad to a square input."""
+        # Normalize pixel values
         image = self.normalization(image)
-        image_feats = self.backbone(image, keep_shape=keep_shape)
 
+        # pad
+        h, w = image.shape[-2:]
+        padh = encoder_size - h
+        padw = encoder_size - w
+        image = F.pad(image, (0, padw, 0, padh))
+        return image
+
+    def postprocess(self, mask: torch.Tensor, encoder_size: int=1024) -> torch.Tensor:
+        """Remove padding"""
+
+
+
+    def get_image_feats(self, image, keep_shape=True):
+        image_feats = self.backbone(image, keep_shape=keep_shape)
         return image_feats
 
     def get_prompt_feats(self, image_shape, prompts, keep_shape=True):

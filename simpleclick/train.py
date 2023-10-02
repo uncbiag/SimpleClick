@@ -32,7 +32,7 @@ def parse_args():
     parser.add_argument('--workers', type=int, default=0,
                         metavar='N', help='Dataloader threads.')
 
-    parser.add_argument('--batch-size', type=int, default=-1,
+    parser.add_argument('--batch-size', type=int, default=32,
                         help='You can override model batch size by specify positive number.')
 
     parser.add_argument('--gpus', type=str, default='', required=False,

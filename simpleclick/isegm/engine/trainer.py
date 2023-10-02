@@ -21,30 +21,30 @@ from .optimizer import get_optimizer, get_optimizer_lrd
 
 class ISTrainer(object):
     def __init__(
-            self, 
-            model: PlainVitModel, 
-            cfg, 
-            loss_cfg,
-            trainset, valset,
-            optimizer='adam',
-            optimizer_params=None,
-            layerwise_decay=False,
-            image_dump_interval=200,
-            checkpoint_interval=10,
-            tb_dump_period=25,
-            max_interactive_points=0,
-            lr_scheduler=None,
-            metrics=None,
-            additional_val_metrics=None,
-            max_num_next_clicks=0,
-            prev_mask_drop_prob=0.0,
-        ):
+        self, 
+        model: PlainVitModel, 
+        cfg, 
+        trainset, 
+        valset,
+        optimizer='adam',
+        optimizer_params=None,
+        layerwise_decay=False,
+        image_dump_interval=200,
+        checkpoint_interval=10,
+        tb_dump_period=25,
+        max_interactive_points=0,
+        lr_scheduler=None,
+        metrics=None,
+        additional_val_metrics=None,
+        max_num_next_clicks=0,
+        prev_mask_drop_prob=0.0,
+    ) -> None:
 
         self.cfg = cfg
         self.is_master = self.cfg.local_rank == 0
         self.max_interactive_points = max_interactive_points
-        self.loss_cfg = loss_cfg
-        self.val_loss_cfg = deepcopy(loss_cfg)
+        self.loss_cfg = cfg.loss_cfg
+        self.val_loss_cfg = deepcopy(self.loss_cfg)
         self.tb_dump_period = tb_dump_period
         self.max_num_next_clicks = max_num_next_clicks
 
@@ -258,13 +258,15 @@ class ISTrainer(object):
 
         with torch.set_grad_enabled(not validation):
             batch_data = {k: v.to(self.device) for k, v in batch_data.items()}
-            image, gt_mask, points = batch_data['images'], batch_data['instances'], batch_data['points']
-            orig_image, orig_gt_mask, orig_points = image.clone(), gt_mask.clone(), points.clone()
+            image, gt_mask, points = \
+                batch_data['images'], batch_data['instances'], batch_data['points']
+            orig_image, orig_gt_mask, orig_points = \
+                image.clone(), gt_mask.clone(), points.clone()
 
             prev_output = torch.zeros_like(image, dtype=torch.float32)[:, :1, :, :]
-
             last_click_indx = None
 
+            image = self.net.preprocess(image)
             image_feats = self.net.get_image_feats(image)
             with torch.no_grad():
                 num_iters = random.randint(0, self.max_num_next_clicks)
@@ -274,10 +276,18 @@ class ISTrainer(object):
                     if not validation:
                         self.net.eval()
 
-                    prompts = {'points': points, 'prev_mask': prev_output}
-                    prompt_feats = self.net.get_prompt_feats(image.shape, prompts)
-                    prev_output = torch.sigmoid(self.net(image.shape, image_feats, prompt_feats)['instances'])
-                    points = get_next_points(prev_output, orig_gt_mask, points, click_indx + 1)
+                    visual_prompts = {'points': points, 'prev_mask': prev_output}
+                    prompt_feats = self.net.get_prompt_feats(
+                        orig_image.shape, visual_prompts
+                    )
+                    prev_output = torch.sigmoid(
+                        self.net(
+                            orig_image.shape, image_feats, prompt_feats
+                        )['instances']
+                    )
+                    points = get_next_points(
+                        prev_output, orig_gt_mask, points, click_indx + 1
+                    )
 
                     if not validation:
                         self.net.train()

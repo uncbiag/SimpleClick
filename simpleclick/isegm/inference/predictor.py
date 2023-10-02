@@ -9,10 +9,7 @@ from isegm.inference.transform import ResizeLongestSide
 
 
 class BasePredictor(object):
-    def __init__(
-            self, 
-            model: PlainVitModel,
-        ) -> None:
+    def __init__(self, model: PlainVitModel) -> None:
         """
         Uses PlainViTModel to calculate the image embedding for an image, and then
         allow repeated, efficient mask prediction given prompts.
@@ -22,30 +19,24 @@ class BasePredictor(object):
         """
         super().__init__()                
         self.model = model
+        self.to_tensor = transforms.ToTensor()
         self.transform = ResizeLongestSide(1024)
 
-    def set_image(
-            self, 
-            image: np.ndarray,
-            image_format: str = "RGB",            
-        ) -> None:
-        """
-        TBD
-        """
-        self.image = transforms.ToTensor()(image).to(self.device)
+    def set_image(self, image: np.ndarray) -> None:
+        """TBD"""
+        self.image = self.to_tensor(image).to(self.device)
+        # self.image = torch.as_tensor(image, self.device)
         if len(self.image.shape) == 3:
             # CHW -> BCHW
             self.image = self.image.unsqueeze(0)
         self.orig_h, self.orig_w = self.image.shape[2:]
         
         self.image = self.transform.apply_image_torch(self.image)
+        self.image = self.model.preprocess(self.image, encoder_size=1024)
         self.image_feats = self.model.get_image_feats(self.image)
         self.prev_mask = torch.zeros_like(self.image[:, :1, :, :])
 
-    def predict(
-            self, 
-            clicker: Clicker,
-        ) -> np.ndarray:
+    def predict(self, clicker: Clicker) -> np.ndarray:
         """
         TBD
         """
@@ -54,7 +45,8 @@ class BasePredictor(object):
 
         prompts = {'points': points_nd, 'prev_mask': self.prev_mask}
         prompt_feats = self.model.get_prompt_feats(self.image.shape, prompts)
-        pred_logits = self.model(self.image.shape, self.image_feats, prompt_feats)['instances']
+        pred_logits = self.model(self.image.shape, self.image_feats, 
+                                 prompt_feats)['instances']
  
         prediction = torch.sigmoid(pred_logits)
         self.prev_mask = prediction
