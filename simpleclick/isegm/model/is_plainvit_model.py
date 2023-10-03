@@ -163,21 +163,13 @@ class PlainVitModel(nn.Module):
         neck_params={}, 
         head_params={},
         fusion_params={},
-        with_aux_output=False, 
         norm_radius=5, 
         use_disks=False, 
         cpu_dist_maps=False, 
-        with_prev_mask=False, 
         norm_mean_std=([.485, .456, .406], [.229, .224, .225])        
     ) -> None:
         super().__init__()
-        self.with_aux_output = with_aux_output
-        self.with_prev_mask = with_prev_mask
         self.normalization = BatchImageNormalize(norm_mean_std[0], norm_mean_std[1])
-
-        self.coord_feature_ch = 2
-        if self.with_prev_mask:
-            self.coord_feature_ch += 1
 
         self.dist_maps = DistMaps(
             norm_radius=norm_radius, 
@@ -186,70 +178,48 @@ class PlainVitModel(nn.Module):
             use_disks=use_disks
         )
 
-        self.prompts_patch_embed = PatchEmbed(
-            img_size= backbone_params['img_size'],
-            patch_size=backbone_params['patch_size'], 
-            in_chans=3 if self.with_prev_mask else 2, 
-            embed_dim=backbone_params['embed_dim'],
-            flatten=True
-        )
-
         self.backbone = VisionTransformer(**backbone_params)
         self.neck = SimpleFPN(**neck_params)
         self.head = SegmentationHead(**head_params)
 
-        self.fusion_type = fusion_params['type']
+        self.visual_prompts_encoder = PatchEmbed(
+            img_size=backbone_params['img_size'],
+            patch_size=backbone_params['patch_size'], 
+            in_chans=3, # prev mask + pos & net clicks
+            embed_dim=backbone_params['embed_dim'],
+            flatten=True
+        )
 
+        self.fusion_type = fusion_params['type']
         if self.fusion_type == 'cross_attention':
             depth = int(fusion_params['depth'])
             self.fusion_blocks = nn.Sequential(*[
                 CrossAttentionBlock(**fusion_params['params'])
                 for _ in range(depth)])
-            
         elif self.fusion_type == 'self_attention':
             depth = int(fusion_params['depth'])
             self.fusion_blocks = nn.Sequential(*[
                 Block(**fusion_params['params'])
                 for _ in range(depth)])
 
-    def preprocess(self, image: torch.Tensor, encoder_size: int=1024) -> torch.Tensor:
-        """Normalize pixel values and pad to a square input."""
-        # Normalize pixel values
-        image = self.normalization(image)
-
-        # pad
-        h, w = image.shape[-2:]
-        padh = encoder_size - h
-        padw = encoder_size - w
-        image = F.pad(image, (0, padw, 0, padh))
-        return image
-
-    def postprocess(self, mask: torch.Tensor, encoder_size: int=1024) -> torch.Tensor:
-        """Remove padding"""
-
-
-
     def get_image_feats(self, image, keep_shape=True):
+        image = self.normalization(image)
         image_feats = self.backbone(image, keep_shape=keep_shape)
         return image_feats
 
     def get_prompt_feats(self, image_shape, prompts, keep_shape=True):
-        points = prompts['points']
-        points_maps = self.dist_maps(image_shape, points)
-
-        # TODO: support more visual prompts such as scribbles, 
-        # bounding boxes, and masks
-
-        prev_mask = prompts['prev_mask']
-        prompt_maps = torch.cat((prev_mask, points_maps), dim=1) 
-
-        prompt_feats = self.prompts_patch_embed(prompt_maps)
-
+        prompt_maps = self.dist_maps(image_shape, prompts['points'])
+        prompt_maps = torch.cat((prompts['prev_mask'], prompt_maps), dim=1)
+        # TODO: support the following visual prompts 
+        # scribbles
+        # bounding boxes
+        # masks
+        prompt_feats = self.visual_prompts_encoder(prompt_maps)
         if keep_shape:
             B = image_shape[0]
             C_new = prompt_feats.shape[-1]
-            H_new = image_shape[2] // self.prompts_patch_embed.patch_size[0]
-            W_new = image_shape[3] // self.prompts_patch_embed.patch_size[1]
+            H_new = image_shape[2] // self.visual_prompts_encoder.patch_size[0]
+            W_new = image_shape[3] // self.visual_prompts_encoder.patch_size[1]
 
             prompt_feats = prompt_feats.transpose(1,2).contiguous()
             prompt_feats = prompt_feats.reshape(B, C_new, H_new, W_new)
@@ -285,17 +255,13 @@ class PlainVitModel(nn.Module):
         fused_features = self.fusion(image_feats, prompt_feats)
         multiscale_features = self.neck(fused_features)
         seg_prob = self.head(multiscale_features)
-
-        # TODO: remove padded area
-
         seg_prob = nn.functional.interpolate(
             seg_prob, 
             size=image_shape[2:], 
             mode='bilinear', 
             align_corners=True
         )
-
-        return {'instances': seg_prob, 'instances_aux': None}
+        return {'instances': seg_prob}
     
     @property
     def device(self) -> torch.device:

@@ -116,8 +116,10 @@ class VisionTransformer(nn.Module):
         self.global_atten_freq = global_atten_freq
         self.embed_dim = embed_dim
 
-        self.patch_embed = PatchEmbed(img_size=img_size, patch_size=patch_size, 
-                                 in_chans=in_chans, embed_dim=embed_dim, flatten=True)
+        self.patch_embed = PatchEmbed(
+            img_size=img_size, patch_size=patch_size, 
+            in_chans=in_chans, embed_dim=embed_dim, flatten=True
+        )
         num_patches = self.patch_embed.num_patches
 
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
@@ -125,10 +127,11 @@ class VisionTransformer(nn.Module):
 
         norm_layer = norm_layer if norm_layer else partial(nn.LayerNorm, eps=1e-6)
         self.blocks = nn.Sequential(*[
-            Block(dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, 
-                  qkv_bias=qkv_bias, attn_drop=attn_drop_rate, norm_layer=norm_layer, 
-                  proj_drop=proj_drop_rate, act_layer=act_layer)
-            for _ in range(depth)])
+            Block(
+                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, 
+                qkv_bias=qkv_bias, attn_drop=attn_drop_rate, norm_layer=norm_layer, 
+                proj_drop=proj_drop_rate, act_layer=act_layer
+            ) for _ in range(depth)])
 
         self.fc_norm = norm_layer(embed_dim)
 
@@ -227,6 +230,7 @@ class VisionTransformer(nn.Module):
         x = self.patch_embed(x)
         if other_feats is not None:
             x += other_feats
+
         x = self.pos_drop(x + self.pos_embed[:, 1:])
 
         num_blocks = len(self.blocks)

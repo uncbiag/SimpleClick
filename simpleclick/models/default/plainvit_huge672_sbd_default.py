@@ -1,17 +1,17 @@
 
 from isegm.utils.exp_imports.default import *
 
-MODEL_NAME = 'sbd_plainvit_huge1024'
+MODEL_NAME = 'plainvit_huge672_sbd'
 
 
 def main(cfg):
-    model = build_model()
+    model = build_model(img_size=672)
     train(model, cfg)
 
 
-def build_model() -> PlainVitModel:
+def build_model(img_size) -> PlainVitModel:
     backbone_params = dict(
-        img_size=(1024, 1024),
+        img_size=(img_size, img_size),
         patch_size=(14,14),
         in_chans=3,
         embed_dim=1280,
@@ -22,28 +22,20 @@ def build_model() -> PlainVitModel:
         qkv_bias=True,
     )
 
-    neck_params = dict(
-        in_dim = 1280,
-        out_dims = [240, 480, 960, 1920],
-    )
+    neck_params = dict(in_dim = 1280, out_dims = [240, 480, 960, 1920],)
 
     head_params = dict(
         in_channels=[240, 480, 960, 1920],
         in_select_index=[0, 1, 2, 3],
         dropout_ratio=0.1,
         num_classes=1,
-        out_channels=256
+        out_channels=256,
     )
 
     fusion_params = dict(
         type='self_attention',
         depth=1,
-        params=dict(
-            dim=1280,
-            num_heads=16,
-            mlp_ratio=4,
-            qkv_bias=True,
-        )
+        params=dict(dim=1280, num_heads=16, mlp_ratio=4, qkv_bias=True,)
     )
 
     model = PlainVitModel(
@@ -53,14 +45,13 @@ def build_model() -> PlainVitModel:
         fusion_params=fusion_params,
         use_disks=True,
         norm_radius=5,
-        with_prev_mask=True,
     )
 
     return model
 
 
 def train(model: PlainVitModel, cfg) -> None:
-    cfg.img_size = 1024
+    cfg.img_size = model.backbone.patch_embed.img_size[0]
     cfg.val_batch_size = cfg.batch_size
     cfg.num_max_points = 24
     cfg.num_max_next_points = 3
@@ -85,27 +76,29 @@ def train(model: PlainVitModel, cfg) -> None:
             border_mode=0, 
             p=0.75
         ),
-        PadIfNeeded(
-            min_height=cfg.img_size, 
-            min_width=cfg.img_size, 
-            border_mode=0,
-            position='top_left',
-        ),
         RandomBrightnessContrast(
             brightness_limit=(-0.25, 0.25),
             contrast_limit=(-0.15, 0.4), 
             p=0.75
         ),
-        RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.75)
+        RGBShift(r_shift_limit=10, g_shift_limit=10, b_shift_limit=10, p=0.75),
+        ResizeLongestSide(target_length=cfg.img_size),
+        PadIfNeeded(
+            min_height=cfg.img_size,
+            min_width=cfg.img_size,
+            border_mode=0,
+            position='top_left',
+        ),
     ], p=1.0)
 
     val_augmentator = Compose([
         UniformRandomResize(scale_range=(0.75, 1.25)),
+        ResizeLongestSide(target_length=cfg.img_size),
         PadIfNeeded(
             min_height=cfg.img_size, 
             min_width=cfg.img_size, 
             border_mode=0,
-            position='top_left'
+            position='top_left',
         ),
     ], p=1.0)
 
@@ -148,7 +141,7 @@ def train(model: PlainVitModel, cfg) -> None:
         optimizer='adam',
         optimizer_params=optimizer_params,
         lr_scheduler=lr_scheduler,
-        checkpoint_interval=[(0, 20), (50, 1)],
+        checkpoint_interval=[(0, 25), (50, 1)],
         image_dump_interval=300,
         metrics=[AdaptiveIoU()],
         max_interactive_points=cfg.num_max_points,

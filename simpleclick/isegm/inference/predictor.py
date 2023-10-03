@@ -32,7 +32,6 @@ class BasePredictor(object):
         self.orig_h, self.orig_w = self.image.shape[2:]
         
         self.image = self.transform.apply_image_torch(self.image)
-        self.image = self.model.preprocess(self.image, encoder_size=1024)
         self.image_feats = self.model.get_image_feats(self.image)
         self.prev_mask = torch.zeros_like(self.image[:, :1, :, :])
 

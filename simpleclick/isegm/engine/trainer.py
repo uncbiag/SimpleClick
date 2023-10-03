@@ -218,20 +218,19 @@ class ISTrainer(object):
             metric.reset_epoch_stats()
 
         val_loss = 0
-        losses_logging = defaultdict(list)
+        losses_log = defaultdict(list)
 
         self.net.eval()
         for i, batch_data in enumerate(tbar):
             global_step = epoch * len(self.val_data) + i
-            loss, batch_losses_logging, splitted_batch_data, outputs = \
-                self.batch_forward(batch_data, validation=True)
+            loss, batch_losses_log, _, _ = self.batch_forward(batch_data, validation=True)
 
-            batch_losses_logging['overall'] = loss
-            reduce_loss_dict(batch_losses_logging)
-            for loss_name, loss_value in batch_losses_logging.items():
-                losses_logging[loss_name].append(loss_value.item())
+            batch_losses_log['overall'] = loss
+            reduce_loss_dict(batch_losses_log)
+            for loss_name, loss_value in batch_losses_log.items():
+                losses_log[loss_name].append(loss_value.item())
 
-            val_loss += batch_losses_logging['overall'].item()
+            val_loss += batch_losses_log['overall'].item()
 
             if self.is_master:
                 tbar.set_description(f'Epoch {epoch}, validation loss: {val_loss/(i + 1):.4f}')
@@ -240,7 +239,7 @@ class ISTrainer(object):
                                       global_step)
 
         if self.is_master:
-            for loss_name, loss_values in losses_logging.items():
+            for loss_name, loss_values in losses_log.items():
                 self.sw.add_scalar(
                     tag=f'{log_prefix}Losses/{loss_name}', 
                     value=np.array(loss_values).mean(),
@@ -254,20 +253,17 @@ class ISTrainer(object):
 
     def batch_forward(self, batch_data, validation=False):
         metrics = self.val_metrics if validation else self.train_metrics
-        losses_logging = dict()
+        losses_log = dict()
 
         with torch.set_grad_enabled(not validation):
             batch_data = {k: v.to(self.device) for k, v in batch_data.items()}
-            image, gt_mask, points = \
-                batch_data['images'], batch_data['instances'], batch_data['points']
-            orig_image, orig_gt_mask, orig_points = \
-                image.clone(), gt_mask.clone(), points.clone()
+            image, gt_mask = batch_data['images'], batch_data['instances']
+            points = batch_data['points']
 
-            prev_output = torch.zeros_like(image, dtype=torch.float32)[:, :1, :, :]
-            last_click_indx = None
-
-            image = self.net.preprocess(image)
             image_feats = self.net.get_image_feats(image)
+            prev_mask = torch.zeros_like(image, dtype=torch.float32)[:, :1, :, :]
+
+            last_click_indx = None
             with torch.no_grad():
                 num_iters = random.randint(0, self.max_num_next_clicks)
                 for click_indx in range(num_iters):
@@ -276,44 +272,34 @@ class ISTrainer(object):
                     if not validation:
                         self.net.eval()
 
-                    visual_prompts = {'points': points, 'prev_mask': prev_output}
-                    prompt_feats = self.net.get_prompt_feats(
-                        orig_image.shape, visual_prompts
-                    )
-                    prev_output = torch.sigmoid(
-                        self.net(
-                            orig_image.shape, image_feats, prompt_feats
-                        )['instances']
-                    )
-                    points = get_next_points(
-                        prev_output, orig_gt_mask, points, click_indx + 1
-                    )
+                    visual_prompts = {'points': points, 'prev_mask': prev_mask}
+                    prompt_feats = self.net.get_prompt_feats(image.shape, visual_prompts)
+                    prev_mask = torch.sigmoid(self.net(image.shape, image_feats, 
+                                                       prompt_feats)['instances'])
+                    points = get_next_points(prev_mask, gt_mask, points, click_indx+1)
 
                     if not validation:
                         self.net.train()
 
-                if self.net.with_prev_mask and self.prev_mask_drop_prob > 0 and last_click_indx is not None:
-                    zero_mask = np.random.random(size=prev_output.size(0)) < self.prev_mask_drop_prob
-                    prev_output[zero_mask] = torch.zeros_like(prev_output[zero_mask])
+                if self.prev_mask_drop_prob > 0 and last_click_indx is not None:
+                    zero_mask = np.random.random(size=prev_mask.size(0)) < self.prev_mask_drop_prob
+                    prev_mask[zero_mask] = torch.zeros_like(prev_mask[zero_mask])
 
             batch_data['points'] = points
-
-            prompts = {'points': points, 'prev_mask': prev_output}
+            prompts = {'points': points, 'prev_mask': prev_mask}
             prompt_feats = self.net.get_prompt_feats(image.shape, prompts)
             output = self.net(image.shape, image_feats, prompt_feats)
 
             loss = 0.0
-            loss = self.add_loss('instance_loss', loss, losses_logging, validation,
+            loss = self.add_loss('instance_loss', loss, losses_log, validation,
                                  lambda: (output['instances'], batch_data['instances']))
-            loss = self.add_loss('instance_aux_loss', loss, losses_logging, validation,
-                                 lambda: (output['instances_aux'], batch_data['instances']))
 
             if self.is_master:
                 with torch.no_grad():
                     for m in metrics:
                         m.update(*(output.get(x) for x in m.pred_outputs),
                                  *(batch_data[x] for x in m.gt_outputs))
-        return loss, losses_logging, batch_data, output
+        return loss, losses_log, batch_data, output
 
     def add_loss(self, loss_name, total_loss, losses_logging, validation, lambda_loss_inputs):
         loss_cfg = self.loss_cfg if not validation else self.val_loss_cfg
