@@ -9,7 +9,7 @@ from isegm.inference.transform import ResizeLongestSide
 
 
 class BasePredictor(object):
-    def __init__(self, model: PlainVitModel) -> None:
+    def __init__(self, model: PlainVitModel, target_length: int=672) -> None:
         """
         Uses PlainViTModel to calculate the image embedding for an image, and then
         allow repeated, efficient mask prediction given prompts.
@@ -19,21 +19,41 @@ class BasePredictor(object):
         """
         super().__init__()                
         self.model = model
+        self.target_length = target_length
         self.to_tensor = transforms.ToTensor()
-        self.transform = ResizeLongestSide(1024)
+        self.transform = ResizeLongestSide(target_length)
 
     def set_image(self, image: np.ndarray) -> None:
         """TBD"""
-        self.image = self.to_tensor(image).to(self.device)
-        # self.image = torch.as_tensor(image, self.device)
-        if len(self.image.shape) == 3:
-            # CHW -> BCHW
-            self.image = self.image.unsqueeze(0)
-        self.orig_h, self.orig_w = self.image.shape[2:]
+        image = self.to_tensor(image).to(self.device)
+        if len(image.shape) == 3:
+            image = image.unsqueeze(0) # CHW -> BCHW
+        self.orig_img_shape = image.shape
         
-        self.image = self.transform.apply_image_torch(self.image)
-        self.image_feats = self.model.get_image_feats(self.image)
-        self.prev_mask = torch.zeros_like(self.image[:, :1, :, :])
+        image = self.preprocess_image(image)
+        self.image_feats = self.model.get_image_feats(image)
+        self.prev_mask = torch.zeros_like(image[:, :1, :, :])
+
+    def preprocess_image(self, image: torch.Tensor) -> torch.Tensor:
+        """Resize image and pad to a square"""
+        # Resize
+        image = self.transform.apply_image_torch(image)
+
+        # Pad to square
+        h, w = image.shape[-2:]
+        padh = self.target_length - h
+        padw = self.target_length - w
+        image = F.pad(image, (0, padw, 0, padh))
+        return image
+
+    def postprocess_mask(self, mask: torch.Tensor) -> torch.Tensor:
+        # unpad
+        orig_h, orig_w = self.orig_img_shape[-2:]
+        mask = mask[..., :orig_h, :orig_w]
+
+        # resize 
+        mask = F.interpolate(mask, (orig_h, orig_w), mode='bilinear', align_corners=False)
+        return mask
 
     def predict(self, clicker: Clicker) -> np.ndarray:
         """
@@ -41,18 +61,19 @@ class BasePredictor(object):
         """
         clicks_list = clicker.get_clicks()
         points_nd = self.get_points_nd([clicks_list])
+        points_nd = self.transform.apply_coords_torch(points_nd)
 
         prompts = {'points': points_nd, 'prev_mask': self.prev_mask}
         prompt_feats = self.model.get_prompt_feats(self.image.shape, prompts)
-        pred_logits = self.model(self.image.shape, self.image_feats, 
-                                 prompt_feats)['instances']
- 
+        pred_logits = self.model(self.image.shape, self.image_feats, prompt_feats)['instances']
+        pred_logits = self.postprocess_mask(pred_logits)
+
         prediction = torch.sigmoid(pred_logits)
         self.prev_mask = prediction
 
         return prediction.cpu().numpy()[0, 0]
 
-    def get_points_nd(self, clicks_lists):
+    def get_points_nd(self, clicks_lists) -> torch.Tensor:
         total_clicks = []
         num_pos_clicks = [sum(x.is_positive for x in clicks_list) for clicks_list in clicks_lists]
         num_neg_clicks = [len(clicks_list) - num_pos for clicks_list, num_pos in zip(clicks_lists, num_pos_clicks)]

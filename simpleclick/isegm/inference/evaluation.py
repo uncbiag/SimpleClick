@@ -60,14 +60,8 @@ def evaluate_sample(
             pred_mask = pred_probs > pred_thr
 
             if callback is not None:
-                callback(
-                    image, 
-                    gt_mask, 
-                    pred_probs, 
-                    sample_id, 
-                    click_indx, 
-                    clicker.clicks_list
-                )
+                callback(image, gt_mask, pred_probs, sample_id, 
+                         click_indx, clicker.clicks_list)
 
             iou = get_iou(gt_mask, pred_mask)
             ious_list.append(iou)

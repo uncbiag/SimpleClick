@@ -105,7 +105,7 @@ def main():
             model = utils.load_is_model(checkpoint_path, args.device)
             dataset_results = evaluate_dataset(
                 dataset=dataset, 
-                predictor=BasePredictor(model), 
+                predictor=BasePredictor(model, target_length=672),
                 pred_thr=args.thresh,
                 max_iou_thr=args.target_iou,
                 min_clicks=args.min_n_clicks,
