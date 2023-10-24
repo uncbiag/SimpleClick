@@ -3,9 +3,9 @@ import pickle
 import argparse
 from pathlib import Path
 
-import cv2
 import torch
 import numpy as np
+import cv2
 
 sys.path.insert(0, '.')
 from isegm.inference import utils
@@ -45,6 +45,8 @@ def parse_args():
     group_iou_thresh.add_argument('--iou-analysis', action='store_true', default=False,
                                   help='Plot mIoU(number of clicks) with target_iou=1.0.')
 
+    parser.add_argument('--n-clicks', type=int, default=20,
+                        help='Maximum number of clicks for the NoC metric.')
     parser.add_argument('--max-n-clicks', type=int, default=20,
                         help='Maximum number of clicks for the NoC metric.')
     parser.add_argument('--min-n-clicks', type=int, default=1,
@@ -103,9 +105,10 @@ def main():
 
         for checkpoint_path in ckpt_list:
             model = utils.load_is_model(checkpoint_path, args.device)
+            predictor = BasePredictor(model, target_length=672)
             dataset_results = evaluate_dataset(
                 dataset=dataset, 
-                predictor=BasePredictor(model, target_length=672),
+                predictor=predictor,
                 pred_thr=args.thresh,
                 max_iou_thr=args.target_iou,
                 min_clicks=args.min_n_clicks,
@@ -206,7 +209,7 @@ def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
     if save_ious:
         ious_path = logs_path / 'ious' / (logs_prefix if logs_prefix else '')
         ious_path.mkdir(parents=True, exist_ok=True)
-        with open(ious_path / f'{dataset_name}_{args.eval_mode}_{args.mode}_{args.n_clicks}.pkl', 'wb') as fp:
+        with open(ious_path / f'{dataset_name}_{args.mode}_{args.n_clicks}.pkl', 'wb') as fp:
             pickle.dump(all_ious, fp)
 
     name_prefix = ''
@@ -215,7 +218,7 @@ def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
         if not single_model_eval:
             name_prefix += f'{dataset_name}_'
 
-    log_path = logs_path / f'{name_prefix}{args.eval_mode}_{args.n_clicks}.txt'
+    log_path = logs_path / f'{name_prefix}_{args.n_clicks}.txt'
     if log_path.exists():
         with open(log_path, 'a') as f:
             f.write(table_row + '\n')
@@ -250,7 +253,7 @@ def save_iou_analysis_data(
         else: 
             model_name = logs_path.stem
 
-    pkl_path = logs_path / f'plots/{name_prefix}{args.eval_mode}_{args.n_clicks}.pickle'
+    pkl_path = logs_path / f'plots/{name_prefix}_{args.n_clicks}.pickle'
     pkl_path.parent.mkdir(parents=True, exist_ok=True)
     with pkl_path.open('wb') as f:
         pickle.dump({

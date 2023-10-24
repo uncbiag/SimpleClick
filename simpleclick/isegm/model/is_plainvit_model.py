@@ -202,24 +202,64 @@ class PlainVitModel(nn.Module):
                 Block(**fusion_params['params'])
                 for _ in range(depth)])
 
+    def preprocess(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Normalize, resize, and pad the input image
+
+        Arguments:
+            x: input tensor of shape [B, C, H, W]
+        """
+        # normalize image
+        x = self.normalization(x)
+
+        # resize the longest side
+        self.orig_size = oldh, oldw = x.shape[-2:]
+        target_length = self.backbone.patch_embed.img_size[0]
+        scale = target_length * 1.0 / max(oldh, oldw)
+        newh, neww = int(oldh * scale + 0.5), int(oldw * scale + 0.5)        
+        x = F.interpolate(x, (newh, neww), mode="bilinear", align_corners=False)
+
+        # pad to square
+        self.input_size = x.shape[-2:]
+        padh, padw = target_length - newh, target_length - neww
+        x = F.pad(x, (0, padw, 0, padh))
+        return x
+
+    def postprocess(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Unpad and resize to original size
+        """
+        # unpad
+        input_h, input_w = self.input_size
+        x = x[..., :input_h, :input_w]
+
+        # resize
+        x = F.interpolate(x, self.orig_size, mode='bilinear', align_corners=False)
+
     def get_image_feats(self, image, keep_shape=True):
-        image = self.normalization(image)
+        image = self.preprocess(image)
         image_feats = self.backbone(image, keep_shape=keep_shape)
         return image_feats
 
     def get_prompt_feats(self, image_shape, prompts, keep_shape=True):
-        prompt_maps = self.dist_maps(image_shape, prompts['points'])
-        prompt_maps = torch.cat((prompts['prev_mask'], prompt_maps), dim=1)
-        # TODO: support the following visual prompts 
-        # scribbles
-        # bounding boxes
-        # masks
-        prompt_feats = self.visual_prompts_encoder(prompt_maps)
+        x = self.dist_maps(image_shape, prompts['points'])
+        x = torch.cat((prompts['prev_mask'], x), dim=1)
+        # TODO: support more visual prompts 
+        # resize the longest side
+        x = F.interpolate(x, self.input_size, mode="bilinear", align_corners=False)
+
+        # pad 
+        target_length = self.backbone.patch_embed.img_size[0]
+        h, w = x.shape[-2:]
+        padh, padw = target_length - h, target_length - w
+        x = F.pad(x, (0, padw, 0, padh))
+
+        prompt_feats = self.visual_prompts_encoder(x)
         if keep_shape:
             B = image_shape[0]
             C_new = prompt_feats.shape[-1]
-            H_new = image_shape[2] // self.visual_prompts_encoder.patch_size[0]
-            W_new = image_shape[3] // self.visual_prompts_encoder.patch_size[1]
+            H_new = target_length // self.visual_prompts_encoder.patch_size[0]
+            W_new = target_length // self.visual_prompts_encoder.patch_size[1]
 
             prompt_feats = prompt_feats.transpose(1,2).contiguous()
             prompt_feats = prompt_feats.reshape(B, C_new, H_new, W_new)

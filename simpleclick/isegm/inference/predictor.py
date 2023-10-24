@@ -29,31 +29,8 @@ class BasePredictor(object):
         if len(image.shape) == 3:
             image = image.unsqueeze(0) # CHW -> BCHW
         self.orig_img_shape = image.shape
-        
-        image = self.preprocess_image(image)
+        self.prev_mask = torch.zeros_like(image, dtype=torch.float32)[:, :1, :, :]
         self.image_feats = self.model.get_image_feats(image)
-        self.prev_mask = torch.zeros_like(image[:, :1, :, :])
-
-    def preprocess_image(self, image: torch.Tensor) -> torch.Tensor:
-        """Resize image and pad to a square"""
-        # Resize
-        image = self.transform.apply_image_torch(image)
-
-        # Pad to square
-        h, w = image.shape[-2:]
-        padh = self.target_length - h
-        padw = self.target_length - w
-        image = F.pad(image, (0, padw, 0, padh))
-        return image
-
-    def postprocess_mask(self, mask: torch.Tensor) -> torch.Tensor:
-        # unpad
-        orig_h, orig_w = self.orig_img_shape[-2:]
-        mask = mask[..., :orig_h, :orig_w]
-
-        # resize 
-        mask = F.interpolate(mask, (orig_h, orig_w), mode='bilinear', align_corners=False)
-        return mask
 
     def predict(self, clicker: Clicker) -> np.ndarray:
         """
@@ -61,13 +38,12 @@ class BasePredictor(object):
         """
         clicks_list = clicker.get_clicks()
         points_nd = self.get_points_nd([clicks_list])
-        points_nd = self.transform.apply_coords_torch(points_nd)
+        points_nd = self.transform.apply_coords_torch(points_nd, self.orig_img_shape[-2:])
 
         prompts = {'points': points_nd, 'prev_mask': self.prev_mask}
-        prompt_feats = self.model.get_prompt_feats(self.image.shape, prompts)
-        pred_logits = self.model(self.image.shape, self.image_feats, prompt_feats)['instances']
-        pred_logits = self.postprocess_mask(pred_logits)
+        prompt_feats = self.model.get_prompt_feats(self.orig_img_shape, prompts)
 
+        pred_logits = self.model(self.orig_img_shape, self.image_feats, prompt_feats)['instances']
         prediction = torch.sigmoid(pred_logits)
         self.prev_mask = prediction
 
