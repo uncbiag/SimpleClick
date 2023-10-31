@@ -105,7 +105,7 @@ def main():
 
         for checkpoint_path in ckpt_list:
             model = utils.load_is_model(checkpoint_path, args.device)
-            predictor = BasePredictor(model, target_length=672)
+            predictor = BasePredictor(model)
             dataset_results = evaluate_dataset(
                 dataset=dataset, 
                 predictor=predictor,

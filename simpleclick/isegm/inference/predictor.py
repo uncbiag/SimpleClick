@@ -5,11 +5,10 @@ from torchvision import transforms
 
 from isegm.model.is_plainvit_model import PlainVitModel
 from isegm.inference.clicker import Clicker
-from isegm.inference.transform import ResizeLongestSide
 
 
 class BasePredictor(object):
-    def __init__(self, model: PlainVitModel, target_length: int=672) -> None:
+    def __init__(self, model: PlainVitModel) -> None:
         """
         Uses PlainViTModel to calculate the image embedding for an image, and then
         allow repeated, efficient mask prediction given prompts.
@@ -19,9 +18,7 @@ class BasePredictor(object):
         """
         super().__init__()                
         self.model = model
-        self.target_length = target_length
         self.to_tensor = transforms.ToTensor()
-        self.transform = ResizeLongestSide(target_length)
 
     def set_image(self, image: np.ndarray) -> None:
         """TBD"""
@@ -37,8 +34,7 @@ class BasePredictor(object):
         TBD
         """
         clicks_list = clicker.get_clicks()
-        points_nd = self.get_points_nd([clicks_list])
-        points_nd = self.transform.apply_coords_torch(points_nd, self.orig_img_shape[-2:])
+        points_nd = self.get_points_nd([clicks_list])        
 
         prompts = {'points': points_nd, 'prev_mask': self.prev_mask}
         prompt_feats = self.model.get_prompt_feats(self.orig_img_shape, prompts)

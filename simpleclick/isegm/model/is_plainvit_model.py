@@ -235,6 +235,7 @@ class PlainVitModel(nn.Module):
 
         # resize
         x = F.interpolate(x, self.orig_size, mode='bilinear', align_corners=False)
+        return x
 
     def get_image_feats(self, image, keep_shape=True):
         image = self.preprocess(image)
@@ -295,12 +296,17 @@ class PlainVitModel(nn.Module):
         fused_features = self.fusion(image_feats, prompt_feats)
         multiscale_features = self.neck(fused_features)
         seg_prob = self.head(multiscale_features)
-        seg_prob = nn.functional.interpolate(
+        target_length = self.backbone.patch_embed.img_size[0]
+        seg_prob = F.interpolate(
             seg_prob, 
-            size=image_shape[2:], 
+            size=(target_length, target_length), 
             mode='bilinear', 
             align_corners=True
         )
+
+        # post process
+        seg_prob = self.postprocess(seg_prob)
+
         return {'instances': seg_prob}
     
     @property
