@@ -65,3 +65,9 @@ class BasePredictor(object):
     @property
     def device(self) -> torch.device:
         return self.model.device
+    
+    def get_states(self):
+        return {'prev_prediction': self.prev_mask.clone()}
+
+    def set_states(self, states=None):
+        self.prev_mask = states['prev_prediction']
