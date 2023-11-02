@@ -1,5 +1,5 @@
 matplotlib==3.3.4
-torch==1.9.0
+torch==2.0.0
 torchvision==0.10.0
 setuptools==52.0.0
 albumentations==0.5.2

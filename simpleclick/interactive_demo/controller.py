@@ -3,7 +3,7 @@ import numpy as np
 from tkinter import messagebox
 
 from isegm.inference import clicker
-from isegm.inference.predictors import get_predictor
+from isegm.inference.predictor import BasePredictor
 from isegm.utils.vis import draw_with_blend_and_clicks
 
 
@@ -53,9 +53,7 @@ class InteractiveController:
 
         click = clicker.Click(is_positive=is_positive, coords=(y, x))
         self.clicker.add_click(click)
-        pred = self.predictor.get_prediction(self.clicker, prev_mask=self._init_mask)
-        if self._init_mask is not None and len(self.clicker) == 1:
-            pred = self.predictor.get_prediction(self.clicker, prev_mask=self._init_mask)
+        pred = self.predictor.predict(self.clicker)
 
         torch.cuda.empty_cache()
 
@@ -111,10 +109,9 @@ class InteractiveController:
     def reset_predictor(self, predictor_params=None):
         if predictor_params is not None:
             self.predictor_params = predictor_params
-        self.predictor = get_predictor(self.net, device=self.device,
-                                       **self.predictor_params)
+        self.predictor = BasePredictor(self.net)
         if self.image is not None:
-            self.predictor.set_input_image(self.image)
+            self.predictor.set_image(self.image)
 
     def reset_init_mask(self):
         self._init_mask = None

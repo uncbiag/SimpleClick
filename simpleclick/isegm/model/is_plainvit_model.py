@@ -163,23 +163,13 @@ class PlainVitModel(nn.Module):
         neck_params={}, 
         head_params={},
         fusion_params={},
-        with_aux_output=False, 
         norm_radius=5, 
         use_disks=False, 
         cpu_dist_maps=False, 
-        with_prev_mask=False, 
         norm_mean_std=([.485, .456, .406], [.229, .224, .225])        
-        ):
-
+    ) -> None:
         super().__init__()
-
-        self.with_aux_output = with_aux_output
-        self.with_prev_mask = with_prev_mask
         self.normalization = BatchImageNormalize(norm_mean_std[0], norm_mean_std[1])
-
-        self.coord_feature_ch = 2
-        if self.with_prev_mask:
-            self.coord_feature_ch += 1
 
         self.dist_maps = DistMaps(
             norm_radius=norm_radius, 
@@ -188,53 +178,89 @@ class PlainVitModel(nn.Module):
             use_disks=use_disks
         )
 
-        self.prompts_patch_embed = PatchEmbed(
-            img_size= backbone_params['img_size'],
-            patch_size=backbone_params['patch_size'], 
-            in_chans=3 if self.with_prev_mask else 2, 
-            embed_dim=backbone_params['embed_dim'],
-            flatten=True
-        )
-
         self.backbone = VisionTransformer(**backbone_params)
         self.neck = SimpleFPN(**neck_params)
         self.head = SegmentationHead(**head_params)
 
-        self.fusion_type = fusion_params['type']
+        self.visual_prompts_encoder = PatchEmbed(
+            img_size=backbone_params['img_size'],
+            patch_size=backbone_params['patch_size'], 
+            in_chans=3, # prev mask + pos & net clicks
+            embed_dim=backbone_params['embed_dim'],
+            flatten=True
+        )
 
+        self.fusion_type = fusion_params['type']
         if self.fusion_type == 'cross_attention':
             depth = int(fusion_params['depth'])
             self.fusion_blocks = nn.Sequential(*[
                 CrossAttentionBlock(**fusion_params['params'])
                 for _ in range(depth)])
-            
         elif self.fusion_type == 'self_attention':
             depth = int(fusion_params['depth'])
             self.fusion_blocks = nn.Sequential(*[
                 Block(**fusion_params['params'])
                 for _ in range(depth)])
 
-    def get_image_feats(self, image, keep_shape=True):
-        image = self.normalization(image)
-        image_feats = self.backbone(image, keep_shape=keep_shape)
+    def preprocess(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Normalize, resize, and pad the input image
 
+        Arguments:
+            x: input tensor of shape [B, C, H, W]
+        """
+        # normalize image
+        x = self.normalization(x)
+
+        # resize the longest side
+        self.orig_size = oldh, oldw = x.shape[-2:]
+        target_length = self.backbone.patch_embed.img_size[0]
+        scale = target_length * 1.0 / max(oldh, oldw)
+        newh, neww = int(oldh * scale + 0.5), int(oldw * scale + 0.5)        
+        x = F.interpolate(x, (newh, neww), mode="bilinear", align_corners=False)
+
+        # pad to square
+        self.input_size = x.shape[-2:]
+        padh, padw = target_length - newh, target_length - neww
+        x = F.pad(x, (0, padw, 0, padh))
+        return x
+
+    def postprocess(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Unpad and resize to original size
+        """
+        # unpad
+        input_h, input_w = self.input_size
+        x = x[..., :input_h, :input_w]
+
+        # resize
+        x = F.interpolate(x, self.orig_size, mode='bilinear', align_corners=False)
+        return x
+
+    def get_image_feats(self, image, keep_shape=True):
+        image = self.preprocess(image)
+        image_feats = self.backbone(image, keep_shape=keep_shape)
         return image_feats
 
     def get_prompt_feats(self, image_shape, prompts, keep_shape=True):
-        points = prompts['points']
-        prompt_maps = self.dist_maps(image_shape, points)
+        x = self.dist_maps(image_shape, prompts['points'])
+        x = torch.cat((prompts['prev_mask'], x), dim=1)
+        # TODO: support more visual prompts 
+        # resize the longest side
+        x = F.interpolate(x, self.input_size, mode="bilinear", align_corners=False)
 
-        prev_mask = prompts['prev_mask']
-        if prev_mask is not None:
-            prompt_maps = torch.cat((prev_mask, prompt_maps), dim=1) 
+        # pad 
+        target_length = self.backbone.patch_embed.img_size[0]
+        h, w = x.shape[-2:]
+        padh, padw = target_length - h, target_length - w
+        x = F.pad(x, (0, padw, 0, padh))
 
-        prompt_feats = self.prompts_patch_embed(prompt_maps)
-
+        prompt_feats = self.visual_prompts_encoder(x)
         if keep_shape:
             B = image_shape[0]
             C_new = prompt_feats.shape[-1]
-            H_new = image_shape[2] // self.prompts_patch_embed.patch_size[0]
-            W_new = image_shape[3] // self.prompts_patch_embed.patch_size[1]
+            H_new = target_length // self.visual_prompts_encoder.patch_size[0]
+            W_new = target_length // self.visual_prompts_encoder.patch_size[1]
 
             prompt_feats = prompt_feats.transpose(1,2).contiguous()
             prompt_feats = prompt_feats.reshape(B, C_new, H_new, W_new)
@@ -270,12 +296,19 @@ class PlainVitModel(nn.Module):
         fused_features = self.fusion(image_feats, prompt_feats)
         multiscale_features = self.neck(fused_features)
         seg_prob = self.head(multiscale_features)
-
-        seg_prob = nn.functional.interpolate(
+        target_length = self.backbone.patch_embed.img_size[0]
+        seg_prob = F.interpolate(
             seg_prob, 
-            size=image_shape[2:], 
+            size=(target_length, target_length), 
             mode='bilinear', 
             align_corners=True
         )
 
-        return {'instances': seg_prob, 'instances_aux': None}
+        # post process
+        seg_prob = self.postprocess(seg_prob)
+
+        return {'instances': seg_prob}
+    
+    @property
+    def device(self) -> torch.device:
+        return next(self.parameters()).device
