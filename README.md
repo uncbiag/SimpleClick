@@ -1,4 +1,11 @@
-## [SimpleClick: Interactive Image Segmentation with Simple Vision Transformers](https://arxiv.org/abs/2210.11006)
+# [SimpleClick: Interactive Image Segmentation with Simple Vision Transformers](https://openaccess.thecvf.com/content/ICCV2023/html/Liu_SimpleClick_Interactive_Image_Segmentation_with_Simple_Vision_Transformers_ICCV_2023_paper.html)
+
+**University of North Carolina at Chapel Hill**
+
+[Qin Liu](https://sites.google.com/cs.unc.edu/qinliu/home), [Zhenlin Xu](https://wildphoton.github.io/), [Gedas Bertasius](https://www.gedasbertasius.com/), [Marc Niethammer](https://biag.cs.unc.edu/)
+
+ICCV 2023
+
 <p align="center">
     <a href="https://paperswithcode.com/sota/interactive-segmentation-on-sbd?p=simpleclick-interactive-image-segmentation">
         <img src="https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/simpleclick-interactive-image-segmentation/interactive-segmentation-on-sbd"/>
@@ -9,14 +16,6 @@
   <img src="./assets/simpleclick_framework.png" alt="drawing", width="650"/>
 </p>
 
-<p align="center">
-    <a href="https://opensource.org/licenses/MIT">
-        <img src="https://img.shields.io/badge/License-MIT-yellow.svg"/>
-    </a>
-    <a href="https://arxiv.org/pdf/2210.11006.pdf">
-        <img src="https://img.shields.io/badge/arXiv-2102.06583-b31b1b"/>
-    </a>    
-</p>
 
 ## Environment
 Training and evaluation environment: Python3.8.8, PyTorch 1.11.0, Ubuntu 20.4, CUDA 11.0. Run the following command to install required packages.
@@ -81,11 +80,13 @@ The code is released under the MIT License. It is a short, permissive software l
 
 ## Citation
 ```bibtex
-@article{liu2022simpleclick,
-  title={SimpleClick: Interactive Image Segmentation with Simple Vision Transformers},
-  author={Liu, Qin and Xu, Zhenlin and Bertasius, Gedas and Niethammer, Marc},
-  journal={arXiv preprint arXiv:2210.11006},
-  year={2022}
+@InProceedings{Liu_2023_ICCV,
+    author    = {Liu, Qin and Xu, Zhenlin and Bertasius, Gedas and Niethammer, Marc},
+    title     = {SimpleClick: Interactive Image Segmentation with Simple Vision Transformers},
+    booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+    month     = {October},
+    year      = {2023},
+    pages     = {22290-22300}
 }
 ```
 ## Acknowledgement
