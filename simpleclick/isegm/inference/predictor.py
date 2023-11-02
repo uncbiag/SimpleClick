@@ -21,7 +21,7 @@ class BasePredictor(object):
         self.to_tensor = transforms.ToTensor()
 
     def set_image(self, image: np.ndarray) -> None:
-        """TBD"""
+        """ Set image"""
         image = self.to_tensor(image).to(self.device)
         if len(image.shape) == 3:
             image = image.unsqueeze(0) # CHW -> BCHW
