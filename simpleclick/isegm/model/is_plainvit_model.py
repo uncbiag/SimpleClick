@@ -243,19 +243,39 @@ class PlainVitModel(nn.Module):
         return image_feats
 
     def get_prompt_feats(self, image_shape, prompts, keep_shape=True):
-        x = self.dist_maps(image_shape, prompts['points'])
-        x = torch.cat((prompts['prev_mask'], x), dim=1)
-        # TODO: support more visual prompts 
+        """Get feature representation for prompts
+        
+        Arguments:
+            image_shape: original image shape
+            prompts: a dictionary containing all possible prompts
+
+        Returns:
+            prompt features
+        """
+
+        prev_mask = prompts['prev_mask']
         # resize the longest side
-        x = F.interpolate(x, self.input_size, mode="bilinear", align_corners=False)
+        prev_mask = F.interpolate(prev_mask, self.input_size, mode='bilinear', align_corners=False)
 
-        # pad 
+        # pad
         target_length = self.backbone.patch_embed.img_size[0]
-        h, w = x.shape[-2:]
+        h, w = prev_mask.shape[-2:]
         padh, padw = target_length - h, target_length - w
-        x = F.pad(x, (0, padw, 0, padh))
+        prev_mask = F.pad(prev_mask, (0, padw, 0, padh))
 
-        prompt_feats = self.visual_prompts_encoder(x)
+        points = prompts['points']
+        # transform coords for image resize
+        for batch_id in range(len(points)):
+            for point_id in range(len(points[batch_id])):
+                if points[batch_id, point_id, 2] > -1:
+                    w, h = points[batch_id, point_id, 0], points[batch_id, point_id, 1]
+                    w = int(w * (self.input_size[0] / self.orig_size[0]) + 0.5)
+                    h = int(h * (self.input_size[1] / self.orig_size[1]) + 0.5)
+                    points[batch_id, point_id, 0], points[batch_id, point_id, 1] = w, h 
+        point_mask = self.dist_maps(prev_mask.shape, points)
+
+        prompt_mask = torch.cat((prev_mask, point_mask), dim=1)
+        prompt_feats = self.visual_prompts_encoder(prompt_mask)
         if keep_shape:
             B = image_shape[0]
             C_new = prompt_feats.shape[-1]

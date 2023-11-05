@@ -21,7 +21,7 @@ class BasePredictor(object):
         self.to_tensor = transforms.ToTensor()
 
     def set_image(self, image: np.ndarray) -> None:
-        """ Set image"""
+        """Set image"""
         image = self.to_tensor(image).to(self.device)
         if len(image.shape) == 3:
             image = image.unsqueeze(0) # CHW -> BCHW
@@ -46,6 +46,13 @@ class BasePredictor(object):
         return prediction.cpu().numpy()[0, 0]
 
     def get_points_nd(self, clicks_lists) -> torch.Tensor:
+        """
+        Arguments:
+            clicks_lists: a list containing clicks list for a batch
+            
+        Returns:
+            torch.Tensor: a tensor of points with shape B x 2N x 3 
+        """
         total_clicks = []
         num_pos_clicks = [sum(x.is_positive for x in clicks_list) for clicks_list in clicks_lists]
         num_neg_clicks = [len(clicks_list) - num_pos for clicks_list, num_pos in zip(clicks_lists, num_pos_clicks)]
