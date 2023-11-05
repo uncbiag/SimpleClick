@@ -34,7 +34,7 @@ def build_model(img_size) -> PlainVitModel:
 
     fusion_params = dict(
         type='self_attention',
-        depth=1,
+        depth=2,
         params=dict(dim=768, num_heads=12, mlp_ratio=4, qkv_bias=True,)
     )
 

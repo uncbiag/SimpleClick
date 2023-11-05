@@ -191,7 +191,7 @@ class PlainVitModel(nn.Module):
         )
 
         self.fusion_type = fusion_params['type']
-        if self.fusion_type == 'cross_attention':
+        if self.fusion_type == 'cross_attention': # still has bug???
             depth = int(fusion_params['depth'])
             self.fusion_blocks = nn.Sequential(*[
                 CrossAttentionBlock(**fusion_params['params'])
