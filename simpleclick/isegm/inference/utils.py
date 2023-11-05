@@ -137,8 +137,8 @@ def find_checkpoint(weights_folder, checkpoint_name):
 def get_results_table(noc_list, over_max_list, brs_type, dataset_name, mean_spc, elapsed_time,
                       n_clicks=20, model_name=None):
     table_header = (f'|{"Predictor":^13}|{"Dataset":^11}|'
-                    f'{"NoC@80%":^9}|{"NoC@85%":^9}|{"NoC@90%":^9}|'
-                    f'{">="+str(n_clicks)+"@85%":^9}|{">="+str(n_clicks)+"@90%":^9}|'
+                    f'{"NoC@85%":^9}|{"NoC@90%":^9}|{"NoC@95%":^9}|'
+                    f'{">="+str(n_clicks)+"@90%":^9}|{">="+str(n_clicks)+"@95%":^9}|'
                     f'{"SPC,s":^7}|{"Time":^9}|')
     row_width = len(table_header)
 

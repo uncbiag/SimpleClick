@@ -40,7 +40,7 @@ def parse_args():
                               help='Use only CPU for inference.')
 
     group_iou_thresh = parser.add_mutually_exclusive_group()
-    group_iou_thresh.add_argument('--target-iou', type=float, default=0.90,
+    group_iou_thresh.add_argument('--target-iou', type=float, default=0.95,
                                   help='Target IoU threshold for the NoC metric. (min possible value = 0.8)')
     group_iou_thresh.add_argument('--iou-analysis', action='store_true', default=False,
                                   help='Plot mIoU(number of clicks) with target_iou=1.0.')
@@ -172,7 +172,7 @@ def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
     all_ious, elapsed_time = dataset_results
     mean_spc, mean_spi = utils.get_time_metrics(all_ious, elapsed_time)
 
-    iou_thrs = np.arange(0.8, min(0.95, args.target_iou) + 0.001, 0.05).tolist()
+    iou_thrs = np.arange(0.85, min(0.95, args.target_iou) + 0.001, 0.05).tolist()
     noc_list, noc_list_std, over_max_list = utils.compute_noc_metric(
         all_ious, iou_thrs=iou_thrs, max_clicks=args.n_clicks
     )
@@ -196,7 +196,7 @@ def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
         table_row += '; ' + miou_str
     else:
         target_iou_int = int(args.target_iou * 100)
-        if target_iou_int not in [80, 85, 90]:
+        if target_iou_int not in [80, 85, 90, 95]:
             noc_list, _, over_max_list = utils.compute_noc_metric(all_ious, iou_thrs=[args.target_iou],
                                                                max_clicks=args.n_clicks)
             table_row += f' NoC@{args.target_iou:.1%} = {noc_list[0]:.2f};'
