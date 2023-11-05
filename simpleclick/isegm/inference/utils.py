@@ -5,7 +5,7 @@ import numpy as np
 
 from isegm.data.datasets import GrabCutDataset, BerkeleyDataset, DavisDataset, \
     SBDEvaluationDataset, PascalVocDataset, BraTSDataset, ssTEMDataset, OAIZIBDataset, \
-    HARDDataset, ADE20kDataset
+    HARDDataset, ADE20kDataset, HQSeg44kDataset
 from isegm.utils.serialization import load_model
 
 
@@ -48,6 +48,7 @@ def load_single_is_model(state_dict, device, **kwargs):
 
 
 def get_dataset(dataset_name, cfg):
+    """Get dataset for validation"""
     if dataset_name == 'GrabCut':
         dataset = GrabCutDataset(cfg.GRABCUT_PATH)
     elif dataset_name == 'Berkeley':
@@ -72,6 +73,8 @@ def get_dataset(dataset_name, cfg):
         dataset = HARDDataset(cfg.HARD_PATH)
     elif dataset_name == 'ADE20K':
         dataset = ADE20kDataset(cfg.ADE20K_PATH, split='val')
+    elif dataset_name == 'HQSeg44K':
+        dataset = HQSeg44kDataset(cfg.HQSeg44K_PATH, split='val')
     else:
         dataset = None
 

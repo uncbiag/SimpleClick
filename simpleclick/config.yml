@@ -11,6 +11,7 @@ ssTEM_PATH: "/playpen-raid2/qinliu/data/ssTEM"
 OAIZIB_PATH: "/playpen-raid2/qinliu/data/OAI-ZIB/iseg_slices"
 OAI_PATH: "/playpen-raid2/qinliu/data/OAI"
 HARD_PATH: "/playpen-raid2/qinliu/data/HARD"
+HQSeg44K_PATH: "/playpen-raid2/qinliu/data/HQSeg44K"
 
 # Train datasets
 SBD_PATH: "/playpen-raid2/qinliu/data/SBD/dataset"
