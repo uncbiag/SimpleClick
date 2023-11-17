@@ -209,7 +209,7 @@ def save_results(args, dataset_name, logs_path, logs_prefix, dataset_results,
     if save_ious:
         ious_path = logs_path / 'ious' / (logs_prefix if logs_prefix else '')
         ious_path.mkdir(parents=True, exist_ok=True)
-        with open(ious_path / f'{dataset_name}_{args.mode}_{args.n_clicks}.pkl', 'wb') as fp:
+        with open(ious_path / f'{dataset_name}_{args.n_clicks}.pkl', 'wb') as fp:
             pickle.dump(all_ious, fp)
 
     name_prefix = ''
