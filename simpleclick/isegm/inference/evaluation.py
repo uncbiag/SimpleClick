@@ -9,7 +9,11 @@ from isegm.inference.clicker import Clicker
 from isegm.inference.predictor import BasePredictor
 
 
-def evaluate_dataset(dataset, predictor, **kwargs):
+def evaluate_dataset(
+    dataset, 
+    predictor: BasePredictor, 
+    **kwargs
+):
     all_ious = []
 
     start_time = time()
@@ -29,6 +33,45 @@ def evaluate_dataset(dataset, predictor, **kwargs):
     elapsed_time = end_time - start_time
 
     return all_ious, elapsed_time
+
+# from torchvision.transforms.functional import resize, to_pil_image  # type: ignore
+
+# def evaluate_dataset(
+#     dataset, 
+#     predictor: BasePredictor, 
+#     **kwargs
+# ):
+#     sample = dataset.get_sample(0)
+#     object_id = sample.objects_ids[0]
+
+#     image = sample.image
+#     gt_mask = sample.gt_mask(object_id)
+
+#     # resize image and gt_mask to 1024 x 1024
+#     image = np.array(resize(to_pil_image(image), (1024, 1024)))
+#     gt_mask = np.array(resize(to_pil_image(gt_mask), (1024, 1024)))
+#     pred_mask = np.zeros_like(gt_mask)
+
+#     clicker = Clicker(gt_mask=gt_mask)
+#     clicker.make_next_click(pred_mask)
+
+
+#     num_trails = 1
+#     elapse_time = 0
+#     for _ in range(num_trails):
+#         start_time = time()
+#         # SAT
+#         predictor.set_image(image)
+#         for _ in range(256):
+#             print(_)
+#             _ = predictor.predict(clicker)
+
+#         end_time = time()
+        
+#         elapse_time += end_time - start_time
+#     print(elapse_time / num_trails)
+
+#     return [], 0
 
 
 def evaluate_sample(
