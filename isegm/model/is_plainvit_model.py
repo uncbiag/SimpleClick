@@ -94,7 +94,7 @@ class PlainVitModel(ISModel):
 
         return {'instances': self.head(multi_scale_features), 'instances_aux': None}
 
-class MultiOutVitModel(ISModel):
+class MultiOutVitModel(ISModel): # unused
     @serialize
     def __init__(
         self,
