@@ -1,7 +1,5 @@
-from isegm.model.is_plainvit_model import MultiOutVitModel
 from isegm.utils.exp_imports.default import *
 from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
-
 
 MODEL_NAME = 'cocolvis_vit_huge448'
 
@@ -18,22 +16,22 @@ def init_model(cfg):
 
     backbone_params = dict(
         img_size=model_cfg.crop_size,
-        patch_size=(16,16),
+        patch_size=(14,14),
         in_chans=3,
-        embed_dim=1024,
-        depth=24,
+        embed_dim=1280,
+        depth=32,
         num_heads=16,
         mlp_ratio=4, 
         qkv_bias=True,
     )
 
     neck_params = dict(
-        in_dim = 1024,
-        out_dims = [192, 384, 768, 1536],
+        in_dim = 1280,
+        out_dims = [240, 480, 960, 1920],
     )
 
     head_params = dict(
-        in_channels=[192, 384, 768, 1536],
+        in_channels=[240, 480, 960, 1920],
         in_index=[0, 1, 2, 3],
         dropout_ratio=0.1,
         num_classes=7,
@@ -43,7 +41,7 @@ def init_model(cfg):
         channels={'x1': 256, 'x2': 128, 'x4': 64}[cfg.upsample],
     )
 
-    model = MultiOutVitModel(
+    model = PlainVitModel(
         use_disks=True,
         norm_radius=5,
         with_prev_mask=True,

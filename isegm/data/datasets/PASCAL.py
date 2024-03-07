@@ -45,7 +45,7 @@ class PASCAL(ISDataset):
                 dataset_samples.append((img_path, gt_path, init_path))
             image_id_lst = self.get_images_and_ids_list(dataset_samples)
             self.dataset_samples = image_id_lst
-        # print(image_id_lst[:5])
+            # print(image_id_lst[:5])
 
     '''
     def get_sample(self, index) -> DSample:
@@ -88,96 +88,12 @@ class PASCAL(ISDataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         instances_mask = cv2.imread(mask_path)
         instances_mask = cv2.cvtColor(instances_mask, cv2.COLOR_BGR2GRAY).astype(np.int32)
-
-
-        mask = instances_mask
         # mask[instances_mask == 255] = 220  # ignored area
         # mask[instances_mask == instance_id] = 1
         objects_ids = instance_ids # 现在instance_ids 是一个列表
-        instances_mask = mask
         return DSample(image, instances_mask, objects_ids=objects_ids, ignore_ids=[self.ignore_id], sample_id=index, init_clicks=init_path)
 
     def get_images_and_ids_list(self, dataset_samples, ignore_id = 255):
-        images_and_ids_list = []
-        object_count = 0
-        # for i in tqdm(range(len(dataset_samples))):
-        for i in range(len(dataset_samples)):
-            image_path, mask_path, init_path = dataset_samples[i]
-            instances_mask = cv2.imread(str(mask_path))
-            instances_mask = cv2.cvtColor(instances_mask, cv2.COLOR_BGR2GRAY).astype(np.int32)
-            objects_ids = np.unique(instances_mask)
-    
-            objects_ids = [x for x in objects_ids if x != ignore_id]
-            object_count+=len(objects_ids)
-            # for j in objects_ids:
-            images_and_ids_list.append([image_path, mask_path ,objects_ids, init_path])
-                # print(i,j,objects_ids)
-        with open(str(self.dataset_path/"pascal_person_part_trainval_list"/self.loadfile), "wb") as file:
-            pickle.dump(images_and_ids_list, file)
-        print("file count: "+str(len(dataset_samples)))
-        print("object count: "+str(object_count))
-        return images_and_ids_list
-    
-class PASCAL_train(ISDataset): #TODO train requires same ignore_id
-    def __init__(self, dataset_path, split='train', **kwargs):
-        super().__init__(**kwargs)
-        assert split in {'train', 'val', 'trainval', 'test'}
-        self._buggy_mask_thresh = 0.05
-        self._buggy_objects = dict()
-
-        self.name = 'PASCAL'
-        self.dataset_path = Path(dataset_path)
-        self._images_path = self.dataset_path / "JPEGImages"
-        self._insts_path = self.dataset_path / "SegmentationPart_label"
-        self.init_path = self.dataset_path / "voc_person_interactive_center_point"
-        self.dataset_split = split
-        self.class_num = 7 # 这个class_num 指所有在miou中可以被计算的类，包含背景类但不包含忽略区域
-        self.ignore_id = 255
-
-        self.loadfile = self.dataset_split+".pkl"
-        if os.path.exists(str(self.dataset_path/"pascal_person_part_trainval_list"/self.loadfile)):
-            with open(str(self.dataset_path/"pascal_person_part_trainval_list"/self.loadfile), 'rb') as file:
-                self.dataset_samples = pickle.load(file)
-        else:
-            dataset_samples = []
-            idsfile = self.dataset_split+"_id.txt"
-            with open(str(self.dataset_path/"pascal_person_part_trainval_list"/idsfile), "r") as f:
-                id_list = [line.strip() for line in f.readlines()]
-            for id in id_list:
-                img_path = self._images_path/(id+".jpg")
-                gt_path = self._insts_path/(id+".png")
-                init_path = self.init_path/(id+".png")
-                dataset_samples.append((img_path, gt_path, init_path))
-            image_id_lst = self.get_images_and_ids_list(dataset_samples)
-            self.dataset_samples = image_id_lst
-        # print(image_id_lst[:5])
-
-    def get_sample(self, index) -> DSample:
-        sample_path, target_path, instance_ids, init_path = self.dataset_samples[index]
-        # sample_id = str(sample_id)
-        # print(sample_id)
-        # num_zero = 6 - len(sample_id)
-        # sample_id = '2007_'+'0'*num_zero + sample_id
-
-        image_path = str(sample_path)
-        mask_path = str(target_path)
-        init_path = str(init_path)
-
-        # print(image_path)
-
-        image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        instances_mask = cv2.imread(mask_path)
-        instances_mask = cv2.cvtColor(instances_mask, cv2.COLOR_BGR2GRAY).astype(np.int32)
-
-        instances_mask = self.remove_buggy_masks(index, instances_mask)
-        instances_ids, _ = get_labels_with_sizes(instances_mask, ignoreid=0)
-
-        objects_ids = instances_ids # 现在instance_ids 是一个列表
-
-        return DSample(image, instances_mask, objects_ids=objects_ids, ignore_ids=[0], sample_id=index)
-
-    def get_images_and_ids_list(self, dataset_samples, ignore_id = 0):
         images_and_ids_list = []
         object_count = 0
         # for i in tqdm(range(len(dataset_samples))):
@@ -217,3 +133,5 @@ class PASCAL_train(ISDataset): #TODO train requires same ignore_id
                 instances_mask[instances_mask == obj_id] = 0
 
         return instances_mask
+    
+

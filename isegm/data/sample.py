@@ -7,9 +7,10 @@ from albumentations import ReplayCompose
 
 class DSample:
     def __init__(self, image, encoded_masks, objects=None,
-                 objects_ids=None, ignore_ids=None, sample_id=None):
+                 objects_ids=None, ignore_ids=None, sample_id=None, init_clicks=None):
         self.image = image
         self.sample_id = sample_id
+        self.init_clicks = init_clicks
 
         if len(encoded_masks.shape) == 2:
             encoded_masks = encoded_masks[:, :, np.newaxis]

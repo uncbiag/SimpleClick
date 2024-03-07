@@ -40,4 +40,4 @@ IMAGENET_PRETRAINED_MODELS:
   SWIN_LARGE: "./weights/pretrained/swin_large_patch4_window12_384_22k.pth"
   MAE_BASE: "./weights/pretrained/mae_pretrain_vit_base.pth"
   MAE_LARGE: "./weights/pretrained/mae_pretrain_vit_large.pth"
-  MAE_HUGE: "./weights/pretrained/cocolvis_vit_huge.pth"
+  MAE_HUGE: "./weights/pretrained/mae_pretrain_vit_huge.pth"
