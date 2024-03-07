@@ -92,7 +92,7 @@ def train(model, cfg, model_cfg):
         keep_background_prob=0.05,
         points_sampler=points_sampler,
         epoch_len=30000,
-        stuff_prob=0.30
+        # stuff_prob=0.30
     )
 
     valset = PASCAL(
