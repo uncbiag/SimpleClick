@@ -36,7 +36,7 @@ def init_model(cfg):
         in_channels=[192, 384, 768, 1536],
         in_index=[0, 1, 2, 3],
         dropout_ratio=0.1,
-        num_classes=1,
+        num_classes=7,
         loss_decode=CrossEntropyLoss(),
         align_corners=False,
         upsample=cfg.upsample,
