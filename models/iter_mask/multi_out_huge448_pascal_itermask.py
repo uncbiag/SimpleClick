@@ -1,3 +1,5 @@
+from isegm.engine.Multi_trainer import Multi_trainer
+from isegm.inference.clicker import Click
 from isegm.utils.exp_imports.default import *
 from isegm.model.modeling.transformer_helper.cross_entropy_loss import CrossEntropyLoss
 
@@ -110,7 +112,7 @@ def train(model, cfg, model_cfg):
 
     lr_scheduler = partial(torch.optim.lr_scheduler.MultiStepLR,
                            milestones=[50, 55], gamma=0.1)
-    trainer = ISTrainer(model, cfg, model_cfg, loss_cfg,
+    trainer = Multi_trainer(model, cfg, model_cfg, loss_cfg,
                         trainset, valset,
                         optimizer='adam',
                         optimizer_params=optimizer_params,
