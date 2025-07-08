@@ -79,8 +79,8 @@ We train all our models on SBD and COCO+LVIS and evaluate them on GrabCut, Berke
 |DAVIS      |  345 images with one object each (test)      |  [DAVIS.zip (43 MB)][DAVIS]          |
 |Pascal VOC |  1449 images with 3417 instances (validation)|  [official site][PascalVOC]          |
 |COCO_MVal  |  800 images with 800 instances (test)        |  [COCO_MVal.zip (127 MB)][COCO_MVal] |
-|BraTS      |  369 cases (test)                            |  [BraTS][BraTS]                      |
-|OAI-ZIB    |  150 cases (test)                            |  [OAI-ZIB][OAI-ZIB]                  |
+|BraTS      |  369 cases (test)                            |  [BraTS20.zip (4.2 MB)][BraTS]       |
+|OAI-ZIB    |  150 cases (test)                            |  [OAI-ZIB.zip (27 MB)][OAI-ZIB]      |
 
 [ADE20k]: http://sceneparsing.csail.mit.edu/
 [OpenImages]: https://storage.googleapis.com/openimages/web/download.html
