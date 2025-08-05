@@ -60,7 +60,7 @@ python train.py models/iter_mask/plainvit_huge448_cocolvis_itermask.py \
 ```
 
 ## Model weights 
-SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1qpK0gtAPkVMF7VC42UA9XF4xMWr5KJmL?usp=sharing)
+SimpleClick models: [Google Drive](https://drive.google.com/drive/folders/1zVhZefCjsTBxvyxnYMVnbkrNeRCH6y9Y?usp=sharing)
 
 ## Datasets
 
