@@ -36,7 +36,7 @@ class ISModel(nn.Module):
         self.dist_maps = DistMaps(norm_radius=norm_radius, spatial_scale=1.0,
                                   cpu_mode=cpu_dist_maps, use_disks=use_disks)
 
-    def forward(self, image, points):
+    def forward(self, image, points): # Here points is still in like (b, 48, 3) form
         image, prev_mask = self.prepare_input(image)
         coord_features = self.get_coord_features(image, prev_mask, points)
         coord_features = self.maps_transform(coord_features)
@@ -51,6 +51,23 @@ class ISModel(nn.Module):
         return outputs
 
     def prepare_input(self, image):
+        '''
+
+        Args:
+            image:
+
+        Returns:
+            image, prev_mask
+
+        Notes:
+            Note that Image is in (b, 4, h, w) form via former transforms.
+
+            Image is normalized.
+
+            Prev_mask is sliced from the input image if with_prev_mask is True. Else it's None.
+
+
+        '''
         prev_mask = None
         if self.with_prev_mask:
             prev_mask = image[:, 3:, :, :]

@@ -132,3 +132,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.idea/
+
+isegm/.DS_Store
+
+data/
+exps/

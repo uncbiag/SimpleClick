@@ -27,7 +27,7 @@ class NormalizedFocalLossSigmoid(nn.Module):
         self._k_sum = 0
         self._m_max = 0
 
-    def forward(self, pred, label):
+    def forward(self, pred, label): # TODO Error here
         one_hot = label > 0.5
         sample_weight = label != self._ignore_label
 
@@ -73,6 +73,75 @@ class NormalizedFocalLossSigmoid(nn.Module):
         sw.add_scalar(tag=name + '_k', value=self._k_sum, global_step=global_step)
         sw.add_scalar(tag=name + '_m', value=self._m_max, global_step=global_step)
 
+
+class NormalizedMultiFocalLossSigmoid(nn.Module):
+    def __init__(self, axis=-1, alpha=0.25, gamma=2, max_mult=-1, eps=1e-12,
+                 from_sigmoid=False, detach_delimeter=True,
+                 batch_axis=0, weight=None, size_average=True,
+                 ignore_label=-1):
+        super(NormalizedMultiFocalLossSigmoid, self).__init__()
+        self._axis = axis
+        self._alpha = alpha
+        self._gamma = gamma
+        self._ignore_label = ignore_label
+        self._weight = weight if weight is not None else 1.0
+        self._batch_axis = batch_axis
+
+        self._from_logits = from_sigmoid
+        self._eps = eps
+        self._size_average = size_average
+        self._detach_delimeter = detach_delimeter
+        self._max_mult = max_mult
+        self._k_sum = 0
+        self._m_max = 0
+
+    def forward(self, pred, label): # TODO Error here
+        label = torch.squeeze(label).to(torch.int64)
+        if len(label.shape) == 2:
+            label = label.unsqueeze(0)
+        N, H, W = label.shape
+        C = pred.shape[1]
+        label[label==self._ignore_label] = C
+        label_one_hot = F.one_hot(label, num_classes=C+1)[:,:,:,:C].permute(0, 3, 1, 2).float()
+        sample_weight = (label != self._ignore_label).float()
+        sample_weight_expanded = sample_weight.unsqueeze(1)
+        sample_weight_expanded = sample_weight_expanded.expand(-1, C, -1, -1)
+        if not self._from_logits:
+            # 对于多分类问题，我们假设 pred 已经是 softmax 输出
+            pred = F.softmax(pred, dim=1)
+
+        alpha = torch.where(label_one_hot == 1, self._alpha * sample_weight_expanded, (1 - self._alpha) * sample_weight_expanded)
+        pt = torch.where(label_one_hot == 1, pred, 1 - pred)
+
+        beta = (1 - pt) ** self._gamma
+
+        sw_sum = torch.sum(sample_weight_expanded, dim=[0, 2, 3], keepdim=True)
+        beta_sum = torch.sum(beta, dim=[0, 2, 3], keepdim=True)
+        mult = sw_sum / (beta_sum + self._eps)
+        if self._detach_delimeter:
+            mult = mult.detach()
+        beta = beta * mult
+
+        # 对 beta 进行裁剪
+        if self._max_mult > 0:
+            beta = torch.clamp(beta, max=self._max_mult)
+
+        # 计算损失
+        loss = -alpha * beta * torch.log(torch.clamp(pt, min=self._eps))
+
+        # 应用样本权重
+        loss = loss * sample_weight_expanded
+
+        # 汇总损失
+        if self._size_average:
+            loss = loss.sum(dim=[0, 2, 3]) / (sw_sum.sum(dim=[0, 2, 3]) + self._eps)
+        else:
+            loss = loss.sum(dim=[0, 2, 3])
+        return loss.mean()
+
+    def log_states(self, sw, name, global_step):
+        sw.add_scalar(tag=name + '_k', value=self._k_sum, global_step=global_step)
+        sw.add_scalar(tag=name + '_m', value=self._m_max, global_step=global_step)
 
 class FocalLoss(nn.Module):
     def __init__(self, axis=-1, alpha=0.25, gamma=2,

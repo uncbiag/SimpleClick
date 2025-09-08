@@ -1,9 +1,11 @@
 import random
 import pickle
+from collections import namedtuple
+
 import numpy as np
 import torch
 from torchvision import transforms
-from .points_sampler import MultiPointSampler
+from .points_sampler import MultiPointSampler, MultiClassSampler
 from .sample import DSample
 
 
@@ -30,6 +32,19 @@ class ISDataset(torch.utils.data.dataset.Dataset):
         self.dataset_samples = None
 
     def __getitem__(self, index):
+        '''
+
+        Args:
+            index:
+
+        Returns:
+            {
+                'images': torch.Tensor, # The image tensor,
+                'points': np.ndarray, # Points, take max_num_points as 24, then shape is (48, 3). First 24 is pos, last 24 is neg. First few is [y, x, 100], then extended with (-1, -1, -1).
+                'instances': np.ndarray # The mask
+            }
+
+        '''
         if self.samples_precomputed_scores is not None:
             index = np.random.choice(self.samples_precomputed_scores['indices'],
                                      p=self.samples_precomputed_scores['probs'])
@@ -97,3 +112,30 @@ class ISDataset(torch.utils.data.dataset.Dataset):
         }
         print(f'Loaded {len(probs)} weights with gamma={samples_scores_gamma}')
         return samples_scores
+
+def is_dataset_collate_fn(data):
+    """
+       data: is a list of tuples with (example, label, length)
+             where 'example' is a tensor of arbitrary shape
+             and label/length are scalars
+    """
+    images = [d['images'] for d in data]
+    points = [d['points'] for d in data]
+    instances = [d['instances'] for d in data]
+
+    all_points = points
+    max_len = max([len(x) for x in all_points])
+    for i in range(len(data)):
+        padding_length = max_len - len(points[i])
+        if padding_length > 0:
+            # Create padding of shape (padding_length, 3) and fill it with (-1, -1, -1)
+            padding = np.full((padding_length, 3), (-1, -1, -1))
+            # Concatenate the original data with the padding
+            padded_point = np.concatenate((all_points[i], padding), axis=0)
+            all_points[i]=padded_point
+    images = torch.stack(images)
+    all_points = np.array(all_points)
+    instances = np.array(instances)
+    return images, torch.from_numpy(all_points), torch.from_numpy(instances)
+
+

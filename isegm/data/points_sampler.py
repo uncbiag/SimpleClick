@@ -303,3 +303,84 @@ def get_point_candidates(obj_mask, k=1.7, full_prob=0.0):
         click_indx = np.random.choice(len(prob_map), p=prob_map)
         click_coords = np.unravel_index(click_indx, dt.shape)
         return np.array([click_coords])
+
+class MultiClassSampler(MultiPointSampler):
+    def __init__(self, ignore_label=255, **kwargs):
+        super().__init__(**kwargs)
+        self.ignore_label = ignore_label
+    def sample_object(self, sample: DSample):
+        '''
+
+        Args:
+            sample:
+
+        Returns:
+
+        Notes:
+            Note that sample is a DSample instance.
+        '''
+        self._selected_mask = sample._encoded_masks
+
+    def sample_points(self):
+        '''
+        Randomly sample points from gt_mask. The number of points is max_num_points.
+        Note that the cls cannot be 255.
+
+        Returns: points
+
+        '''
+        assert self._selected_mask is not None
+        num_points = self.max_num_points
+        # num_points = 1 + np.random.choice(np.arange(self.max_num_points), p=self._pos_probs)
+        h, w = self._selected_mask.shape[:2]
+        valid_mask = self._selected_mask[:, :, 0] != self.ignore_label
+        valid_indices = np.where(valid_mask)
+        selected_indices = np.random.choice(len(valid_indices[0]), self.max_num_points, replace=False)
+
+        points = []
+
+        for idx in selected_indices:
+            y, x = valid_indices[0][idx], valid_indices[1][idx]
+            cls = self._selected_mask[y, x, 0]
+            points.append([y, x, cls])
+
+        return points
+
+    def _multi_mask_sample_points(self, selected_masks, is_negative, with_first_click=False):
+        selected_masks = selected_masks[:self.max_num_points]
+
+        each_obj_points = [
+            self._sample_points(mask, is_negative=is_negative[i],
+                                with_first_click=with_first_click)
+            for i, mask in enumerate(selected_masks)
+        ]
+        each_obj_points = [x for x in each_obj_points if len(x) > 0]
+
+        points = []
+        if len(each_obj_points) == 1:
+            points = each_obj_points[0]
+        elif len(each_obj_points) > 1:
+            if self.only_one_first_click:
+                each_obj_points = each_obj_points[:1]
+
+            points = [obj_points[0] for obj_points in each_obj_points]
+
+            aggregated_masks_with_prob = []
+            for indx, x in enumerate(selected_masks):
+                if isinstance(x, (list, tuple)) and x and isinstance(x[0], (list, tuple)):
+                    for t, prob in x:
+                        aggregated_masks_with_prob.append((t, prob / len(selected_masks)))
+                else:
+                    aggregated_masks_with_prob.append((x, 1.0 / len(selected_masks)))
+
+            other_points_union = self._sample_points(aggregated_masks_with_prob, is_negative=True)
+            if len(other_points_union) + len(points) <= self.max_num_points:
+                points.extend(other_points_union)
+            else:
+                points.extend(random.sample(other_points_union, self.max_num_points - len(points)))
+
+        if len(points) < self.max_num_points:
+            points.extend([(-1, -1, -1)] * (self.max_num_points - len(points)))
+
+        return points
+
